@@ -1,0 +1,267 @@
+extends ../../admin/layout
+
+block content
+  .container-fluid.py-4
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h1.h3.mb-0
+        i.fas.fa-ticket-alt.me-2
+        | Quản lý đặt vé
+      .d-flex.gap-2
+        select.form-select#statusFilter(style='width: 200px')
+          option(value='') Tất cả trạng thái
+          option(value='1') Chờ xác nhận
+          option(value='2') Đã xác nhận
+          option(value='3') Đã hủy
+          option(value='4') Hoàn thành
+    
+    // Thống kê vé theo trạng thái
+    .row.mb-4
+      .col-xl-2.col-md-6.mb-4
+        .card.border-left-primary.shadow.h-100.py-2
+          .card-body
+            .row.no-gutters.align-items-center
+              .col.mr-2
+                .text-xs.font-weight-bold.text-primary.text-uppercase.mb-1 Tổng số vé
+                .h5.mb-0.font-weight-bold.text-gray-800 #{stats.total}
+              .col-auto
+                i.fas.fa-ticket-alt.fa-2x.text-gray-300
+      
+      .col-xl-2.col-md-6.mb-4
+        .card.border-left-warning.shadow.h-100.py-2
+          .card-body
+            .row.no-gutters.align-items-center
+              .col.mr-2
+                .text-xs.font-weight-bold.text-warning.text-uppercase.mb-1 Chờ xác nhận
+                .h5.mb-0.font-weight-bold.text-gray-800 #{stats.pending}
+              .col-auto
+                i.fas.fa-clock.fa-2x.text-gray-300
+      
+      .col-xl-2.col-md-6.mb-4
+        .card.border-left-success.shadow.h-100.py-2
+          .card-body
+            .row.no-gutters.align-items-center
+              .col.mr-2
+                .text-xs.font-weight-bold.text-success.text-uppercase.mb-1 Đã xác nhận
+                .h5.mb-0.font-weight-bold.text-gray-800 #{stats.confirmed}
+              .col-auto
+                i.fas.fa-check.fa-2x.text-gray-300
+      
+      .col-xl-2.col-md-6.mb-4
+        .card.border-left-danger.shadow.h-100.py-2
+          .card-body
+            .row.no-gutters.align-items-center
+              .col.mr-2
+                .text-xs.font-weight-bold.text-danger.text-uppercase.mb-1 Đã hủy
+                .h5.mb-0.font-weight-bold.text-gray-800 #{stats.cancelled}
+              .col-auto
+                i.fas.fa-times.fa-2x.text-gray-300
+      
+      .col-xl-2.col-md-6.mb-4
+        .card.border-left-info.shadow.h-100.py-2
+          .card-body
+            .row.no-gutters.align-items-center
+              .col.mr-2
+                .text-xs.font-weight-bold.text-info.text-uppercase.mb-1 Hoàn thành
+                .h5.mb-0.font-weight-bold.text-gray-800 #{stats.completed}
+              .col-auto
+                i.fas.fa-check-double.fa-2x.text-gray-300
+
+    if messages.success
+      .alert.alert-success.alert-dismissible.fade.show(role='alert')
+        = messages.success
+        button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+    
+    if messages.error
+      .alert.alert-danger.alert-dismissible.fade.show(role='alert')
+        = messages.error
+        button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+
+    .mb-3#bulkActionsContainer(style='display: none')
+      .d-flex.gap-2
+        .dropdown.me-2
+          button.btn.btn-secondary.dropdown-toggle(type='button' id='bulkStatusDropdown' data-bs-toggle='dropdown' aria-expanded='false')
+            i.fas.fa-exchange-alt.me-1
+            | Cập nhật trạng thái
+          ul.dropdown-menu(aria-labelledby='bulkStatusDropdown')
+            li
+              a.dropdown-item(href='#' onclick="bulkUpdateStatus(1, 'cập nhật thành chờ xác nhận')") Chờ xác nhận
+            li
+              a.dropdown-item(href='#' onclick="bulkUpdateStatus(2, 'xác nhận')") Đã xác nhận
+            li 
+              a.dropdown-item(href='#' onclick="bulkUpdateStatus(3, 'hủy')") Đã hủy
+            li
+              a.dropdown-item(href='#' onclick="bulkUpdateStatus(4, 'hoàn thành')") Hoàn thành
+        button.btn.btn-success#bulkConfirm(type='button')
+          i.fas.fa-check.me-1
+          | Xác nhận đã chọn
+        button.btn.btn-primary#bulkComplete(type='button')
+          i.fas.fa-check-double.me-1
+          | Hoàn thành đã chọn
+        button.btn.btn-danger#bulkCancel(type='button')
+          i.fas.fa-times.me-1
+          | Hủy đã chọn
+        button.btn.btn-light#bulkDeselectAll(type='button')
+          i.fas.fa-times-circle.me-1
+          | Bỏ chọn tất cả
+
+    .card.shadow
+      .card-body
+        .table-responsive
+          table.table.table-hover
+            thead
+              tr
+                th 
+                  input.form-check-input#selectAll(type='checkbox')
+                th ID
+                th Tuyến xe
+                th Thời gian
+                th Khách hàng
+                th Số vé
+                th Tổng vé đã đặt
+                th Tổng tiền
+                th Trạng thái
+                th Thao tác
+            tbody
+              each booking in bookings
+                tr(data-status=booking.status_id)
+                  td
+                    input.form-check-input.booking-checkbox(
+                      type='checkbox' 
+                      value=booking.id
+                      data-status=booking.status_id
+                    )
+                  td= booking.id
+                  td #{booking.from_location} - #{booking.to_location}
+                  td= formatDate(booking.departure_time)
+                  td= booking.customer_name
+                  td= booking.seats
+                  td
+                    span.badge.bg-info= booking.user_booking_count
+                  td= formatCurrency(booking.total_price)
+                  td
+                    .dropdown
+                      button.btn.btn-sm.dropdown-toggle(class=`bg-${booking.status_color} text-white` type='button' id=`statusDropdown-${booking.id}` data-bs-toggle='dropdown' aria-expanded='false')
+                        = booking.status_name
+                      ul.dropdown-menu(aria-labelledby=`statusDropdown-${booking.id}`)
+                        li
+                          a.dropdown-item(href='#' onclick=`updateBookingStatus(${booking.id}, 1, 'cập nhật thành chờ xác nhận')`) Chờ xác nhận
+                        li
+                          a.dropdown-item(href='#' onclick=`updateBookingStatus(${booking.id}, 2, 'xác nhận')`) Đã xác nhận
+                        li 
+                          a.dropdown-item(href='#' onclick=`updateBookingStatus(${booking.id}, 3, 'hủy')`) Đã hủy
+                        li
+                          a.dropdown-item(href='#' onclick=`updateBookingStatus(${booking.id}, 4, 'hoàn thành')`) Hoàn thành
+                  td
+                    .btn-group
+                      a.btn.btn-sm.btn-info(href=`/admin/bookings/${booking.id}`)
+                        i.fas.fa-eye.me-1
+                        | Chi tiết
+                      form.d-inline(method='POST' action=`/admin/bookings/${booking.id}/delete` onsubmit='return confirm("Bạn có chắc chắn muốn xóa đơn đặt vé này?")')
+                        button.btn.btn-sm.btn-danger(type='submit')
+                          i.fas.fa-trash.me-1
+                          | Xóa
+
+block scripts
+  script.
+    function updateBulkActionsVisibility() {
+      const checkedCount = document.querySelectorAll('.booking-checkbox:checked').length;
+      document.getElementById('bulkActionsContainer').style.display = checkedCount > 0 ? 'block' : 'none';
+    }
+
+    document.getElementById('selectAll').addEventListener('change', function() {
+      const isChecked = this.checked;
+      document.querySelectorAll('.booking-checkbox').forEach(checkbox => {
+        checkbox.checked = isChecked;
+      });
+      updateBulkActionsVisibility();
+    });
+
+    document.getElementById('bulkDeselectAll').addEventListener('click', function() {
+      document.querySelectorAll('.booking-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      document.getElementById('selectAll').checked = false;
+      updateBulkActionsVisibility();
+    });
+
+    document.querySelectorAll('.booking-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', updateBulkActionsVisibility);
+    });
+
+    function bulkUpdateStatus(statusId, statusText) {
+      const checkedBookings = document.querySelectorAll('.booking-checkbox:checked');
+      if (checkedBookings.length === 0) {
+        alert('Vui lòng chọn ít nhất một đơn đặt vé');
+        return;
+      }
+
+      if (!confirm(`Bạn có chắc chắn muốn ${statusText} ${checkedBookings.length} đơn đặt vé đã chọn?`)) {
+        return;
+      }
+
+      const bookingIds = Array.from(checkedBookings).map(el => el.value);
+
+      fetch('/admin/bookings/bulk-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ bookingIds, statusId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert(data.message);
+          window.location.reload();
+        } else {
+          alert(data.message || 'Có lỗi xảy ra');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra');
+      });
+    }
+
+    document.getElementById('bulkConfirm').addEventListener('click', function() {
+      bulkUpdateStatus(2, 'xác nhận');
+    });
+
+    document.getElementById('bulkComplete').addEventListener('click', function() {
+      bulkUpdateStatus(4, 'hoàn thành');
+    });
+
+    document.getElementById('bulkCancel').addEventListener('click', function() {
+      bulkUpdateStatus(3, 'hủy');
+    });
+
+    document.getElementById('statusFilter').addEventListener('change', function() {
+      const statusValue = this.value;
+      const rows = document.querySelectorAll('tbody tr');
+      
+      rows.forEach(row => {
+        if (!statusValue || row.dataset.status === statusValue) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+
+    function updateBookingStatus(id, statusId, actionText) {
+      if (confirm(`Bạn có chắc chắn muốn ${actionText} đơn đặt vé này?`)) {
+        fetch(`/admin/bookings/${id}/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status_id: statusId })
+        }).then(response => {
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            alert(`Có lỗi xảy ra khi ${actionText} đơn đặt vé`);
+          }
+        });
+      }
+    } 

@@ -1,0 +1,174 @@
+extends ../layout
+
+block content
+  .container-fluid.py-4
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h1.h3.mb-0
+        i.fas.fa-calendar-alt.me-2
+        | Quản lý lịch trình
+      a.btn.btn-primary(href='/admin/schedules/create')
+        i.fas.fa-plus.me-2
+        | Thêm lịch trình
+
+    // Filters
+    .card.shadow.mb-4
+      .card-body
+        .row
+          .col-md-4.mb-3
+            label.form-label(for='date-filter') Lọc theo ngày
+            input#date-filter.form-control(
+              type='date'
+              value=currentDate
+            )
+          .col-md-8.mb-3
+            label.form-label Lọc theo khoảng thời gian
+            .input-group
+              input#start-date.form-control(
+                type='date'
+                placeholder='Từ ngày'
+              )
+              span.input-group-text đến
+              input#end-date.form-control(
+                type='date'
+                placeholder='Đến ngày'
+              )
+              button#filter-range.btn.btn-primary(type='button')
+                i.fas.fa-filter.me-1
+                | Lọc
+
+    if messages.success
+      .alert.alert-success.alert-dismissible.fade.show
+        = messages.success
+        button.btn-close(type='button' data-bs-dismiss='alert')
+    
+    if messages.error
+      .alert.alert-danger.alert-dismissible.fade.show
+        = messages.error
+        button.btn-close(type='button' data-bs-dismiss='alert')
+
+    .card.shadow
+      .card-header.bg-white
+        .d-flex.justify-content-between.align-items-center
+          h5.mb-0 Danh sách lịch trình
+          .input-group(style='width: 300px')
+            input#searchSchedule.form-control(
+              type='text'
+              placeholder='Tìm kiếm lịch trình...'
+            )
+            button.btn.btn-outline-secondary(type='button')
+              i.fas.fa-search
+
+      .card-body
+        .table-responsive
+          table.table.table-hover.align-middle
+            thead.bg-light
+              tr
+                th ID
+                th Tuyến xe
+                th Ngày
+                th Giờ đi
+                th Giờ đến
+                th Loại xe
+                th.text-end Giá vé
+                th.text-center Ghế trống
+                th.text-center Đã đặt
+                th.text-center Thao tác
+            tbody
+              if schedules && schedules.length
+                each schedule in schedules
+                  tr
+                    td= schedule.id
+                    td
+                      .d-flex.flex-column
+                        span.fw-medium #{schedule.from_location} 
+                        span.text-muted #{schedule.to_location}
+                    td= schedule.formatted_date
+                    td
+                      if schedule.formatted_departure_time
+                        span.badge.bg-primary
+                          i.fas.fa-clock.me-1
+                          | #{schedule.formatted_departure_time}
+                      else
+                        span.text-muted Chưa có
+                    td
+                      if schedule.formatted_arrival_time
+                        span.badge.bg-info
+                          i.fas.fa-clock.me-1
+                          | #{schedule.formatted_arrival_time}
+                      else
+                        span.text-muted Chưa có
+                    td
+                      span.badge.bg-secondary= schedule.bus_type
+                    td.text-end
+                      span.fw-medium #{schedule.price.toLocaleString('vi-VN')}đ
+                    td.text-center
+                      span.badge.bg-success= schedule.available_seats
+                    td.text-center
+                      span.badge.bg-warning= schedule.total_bookings || 0
+                    td.text-center
+                      .btn-group
+                        a.btn.btn-sm.btn-info.me-1(
+                          href=`/admin/schedules/${schedule.id}/edit`
+                          title='Sửa'
+                        )
+                          i.fas.fa-edit
+                        form.d-inline(
+                          method='POST'
+                          action=`/admin/schedules/${schedule.id}/delete`
+                          onsubmit='return confirm("Bạn có chắc chắn muốn xóa lịch trình này?")'
+                        )
+                          button.btn.btn-sm.btn-danger(
+                            type='submit'
+                            title='Xóa'
+                          )
+                            i.fas.fa-trash
+              else
+                tr
+                  td.text-center.py-4(colspan='10')
+                    .text-muted
+                      i.fas.fa-inbox.me-2
+                      | Không có lịch trình nào
+
+block scripts
+  script.
+    // Xử lý tìm kiếm
+    const searchSchedule = document.getElementById('searchSchedule');
+    searchSchedule.addEventListener('input', function() {
+      const searchText = this.value.toLowerCase();
+      const rows = document.querySelectorAll('tbody tr');
+      
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchText) ? '' : 'none';
+      });
+    });
+
+    // Xử lý lọc theo ngày
+    const dateFilter = document.getElementById('date-filter');
+    dateFilter.addEventListener('change', function() {
+      const date = this.value;
+      if (date) {
+        window.location.href = `/admin/schedules?date=${date}`;
+      }
+    });
+
+    // Xử lý lọc theo khoảng thời gian
+    const filterRange = document.getElementById('filter-range');
+    filterRange.addEventListener('click', function() {
+      const startDate = document.getElementById('start-date').value;
+      const endDate = document.getElementById('end-date').value;
+      
+      if (startDate && endDate) {
+        window.location.href = `/admin/schedules?startDate=${startDate}&endDate=${endDate}`;
+      } else {
+        alert('Vui lòng chọn khoảng thời gian');
+      }
+    });
+
+    // Format dates
+    document.addEventListener('DOMContentLoaded', function() {
+      const today = new Date().toISOString().split('T')[0];
+      dateFilter.min = today;
+      document.getElementById('start-date').min = today;
+      document.getElementById('end-date').min = today;
+    }); 

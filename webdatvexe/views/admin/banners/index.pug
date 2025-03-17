@@ -1,0 +1,60 @@
+extends ../../admin/layout
+
+block content
+  .container-fluid.py-4
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h1.h3.mb-0
+        i.fas.fa-images.me-2
+        | Quản lý Banner
+      a.btn.btn-primary(href='/admin/banners/create')
+        i.fas.fa-plus.me-2
+        | Thêm Banner mới
+
+    if success
+      .alert.alert-success.alert-dismissible.fade.show
+        = success
+        button.btn-close(type='button' data-bs-dismiss='alert')
+
+    .card.shadow
+      .card-header.d-flex.justify-content-between.align-items-center
+        h5.mb-0 Danh sách Banner
+        .input-group(style='width: 300px')
+          input.form-control(type='text' placeholder='Tìm kiếm...' id='searchBanner')
+          button.btn.btn-outline-secondary(type='button')
+            i.fas.fa-search
+      
+      .card-body
+        .table-responsive
+          table.table.table-hover
+            thead
+              tr
+                th Hình ảnh
+                th Tiêu đề
+                th Vị trí
+                th Trạng thái
+                th Thời gian hiển thị
+                th Thứ tự
+                th Thao tác
+            
+            tbody
+              each banner in banners
+                tr
+                  td
+                    img.img-thumbnail(src=banner.image_url alt=banner.title style='width: 100px; height: 60px; object-fit: cover')
+                  td= banner.title
+                  td= banner.position
+                  td
+                    span.badge(class=banner.status === 'active' ? 'bg-success' : 'bg-secondary')
+                      = banner.status === 'active' ? 'Đang hiện' : 'Ẩn'
+                  td
+                    = banner.start_date ? new Date(banner.start_date).toLocaleDateString('vi-VN') : 'Không giới hạn'
+                    |  - 
+                    = banner.end_date ? new Date(banner.end_date).toLocaleDateString('vi-VN') : 'Không giới hạn'
+                  td= banner.order_index
+                  td
+                    .btn-group
+                      a.btn.btn-sm.btn-info.me-1(href=`/admin/banners/${banner.id}/edit`)
+                        i.fas.fa-edit
+                      form.d-inline(method='POST' action=`/admin/banners/${banner.id}?_method=DELETE` onsubmit='return confirm("Bạn có chắc chắn muốn xóa banner này?")')
+                        button.btn.btn-sm.btn-danger(type='submit')
+                          i.fas.fa-trash 

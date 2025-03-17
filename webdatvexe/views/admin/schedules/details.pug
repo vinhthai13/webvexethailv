@@ -1,0 +1,119 @@
+extends ../../layout
+
+block content
+  .container-fluid.py-4
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h1.h3 Chi tiết lịch trình
+      .btn-group
+        a.btn.btn-primary(href=`/admin/schedules/${schedule.id}/edit`)
+          i.fas.fa-edit.me-2
+          | Sửa
+        button.btn.btn-danger(onclick=`deleteSchedule(${schedule.id})`)
+          i.fas.fa-trash.me-2
+          | Xóa
+
+    .row
+      .col-md-6.mb-4
+        .card
+          .card-body
+            h5.card-title Thông tin lịch trình
+            table.table
+              tbody
+                tr
+                  th(width='150') Tuyến xe
+                  td #{schedule.from_location} - #{schedule.to_location}
+                tr
+                  th Thời gian
+                  td #{formatDate(schedule.date).split(',')[0]}
+                tr
+                  th Khởi hành
+                  td= schedule.departure_time
+                tr
+                  th Đến nơi
+                  td= schedule.arrival_time
+                tr
+                  th Thời gian di chuyển
+                  td= schedule.duration
+                tr
+                  th Loại xe
+                  td= schedule.bus_type
+                tr
+                  th Giá vé
+                  td= formatCurrency(schedule.price)
+                tr
+                  th Ghế trống
+                  td= schedule.available_seats
+
+      .col-md-6.mb-4
+        .card
+          .card-body
+            h5.card-title Cập nhật thông tin
+            form(action=`/admin/schedules/${schedule.id}` method='POST')
+              .mb-3
+                label.form-label(for='departure_time') Giờ khởi hành
+                input.form-control(type='time' name='departure_time' value=schedule.departure_time)
+              .mb-3
+                label.form-label(for='arrival_time') Giờ đến
+                input.form-control(type='time' name='arrival_time' value=schedule.arrival_time)
+              .mb-3
+                label.form-label(for='date') Ngày
+                input.form-control(type='date' name='date' value=schedule.date)
+              .mb-3
+                label.form-label(for='bus_type') Loại xe
+                select.form-control(name='bus_type')
+                  option(value='Giường nằm' selected=schedule.bus_type === 'Giường nằm') Giường nằm
+                  option(value='Ghế ngồi' selected=schedule.bus_type === 'Ghế ngồi') Ghế ngồi
+              .mb-3
+                label.form-label(for='price') Giá vé
+                input.form-control(type='number' name='price' value=schedule.price)
+              .mb-3
+                label.form-label(for='available_seats') Số ghế trống
+                input.form-control(type='number' name='available_seats' value=schedule.available_seats)
+              button.btn.btn-primary(type='submit') Cập nhật
+
+    .card
+      .card-body
+        h5.card-title Danh sách đặt vé
+        .table-responsive
+          table.table.table-hover
+            thead
+              tr
+                th ID
+                th Khách hàng
+                th SĐT
+                th Email
+                th Số vé
+                th Tổng tiền
+                th Trạng thái
+                th Ngày đặt
+            tbody
+              each booking in bookings
+                tr
+                  td= booking.id
+                  td= booking.customer_name
+                  td= booking.phone
+                  td= booking.email
+                  td= booking.seats
+                  td= formatCurrency(booking.total_price)
+                  td
+                    span(class=`badge bg-${booking.status_color}`)= booking.status_name
+                  td= formatDate(booking.created_at)
+
+block scripts
+  script.
+    function deleteSchedule(id) {
+      if (confirm('Bạn có chắc chắn muốn xóa lịch trình này?')) {
+        fetch(`/admin/schedules/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }).then(response => {
+          if (response.ok) {
+            window.location.href = '/admin/schedules';
+          } else {
+            alert('Có lỗi xảy ra khi xóa lịch trình');
+          }
+        });
+      }
+    } 

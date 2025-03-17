@@ -1,0 +1,86 @@
+extends ../layout
+
+block content
+  .container-fluid.py-4
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h1.h3.mb-0
+        i.fas.fa-route.me-2
+        | Quản lý tuyến xe
+      a.btn.btn-primary(href='/admin/routes/create')
+        i.fas.fa-plus.me-2
+        | Thêm tuyến xe
+
+    if success && success.length > 0
+      .alert.alert-success.alert-dismissible.fade.show(role='alert')
+        i.fas.fa-check-circle.me-2
+        = success
+        button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+    
+    if error && error.length > 0
+      .alert.alert-danger.alert-dismissible.fade.show(role='alert')
+        i.fas.fa-exclamation-circle.me-2
+        = error
+        button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+
+    .card.shadow
+      .card-header.d-flex.justify-content-between.align-items-center
+        h5.mb-0 Danh sách tuyến xe
+        .input-group(style='width: 300px')
+          input.form-control#searchRoute(type='text' placeholder='Tìm kiếm tuyến xe...')
+          button.btn.btn-outline-secondary(type='button')
+            i.fas.fa-search
+      .card-body
+        .table-responsive
+          table.table.table-hover
+            thead
+              tr
+                th ID
+                th Hình ảnh
+                th Điểm đi
+                th Điểm đến
+                th Khoảng cách
+                th Thời gian
+                th Giá vé
+                th Mô tả
+                th Số lịch trình
+                th Số đặt vé
+                th Thao tác
+            tbody
+              each route in routes
+                tr
+                  td= route.id
+                  td
+                    if route.image
+                      img.img-thumbnail(src=route.image alt=`${route.from_location} - ${route.to_location}` style='width: 100px; height: 60px; object-fit: cover;')
+                    else
+                      span.badge.bg-secondary Chưa có
+                  td= route.from_location
+                  td= route.to_location
+                  td= route.distance
+                  td= route.duration
+                  td= route.price.toLocaleString('vi-VN') + ' VNĐ'
+                  td= route.description
+                  td
+                    span.badge.bg-primary.rounded-pill= route.schedule_count
+                  td
+                    span.badge.bg-info.rounded-pill= route.booking_count
+                  td
+                    .btn-group
+                      a.btn.btn-sm.btn-info.me-1(href=`/admin/routes/${route.id}/edit`)
+                        i.fas.fa-edit
+                      form.d-inline(method='POST' action=`/admin/routes/${route.id}/delete` onsubmit='return confirm("Bạn có chắc chắn muốn xóa tuyến xe này?")')
+                        button.btn.btn-sm.btn-danger(type='submit')
+                          i.fas.fa-trash
+
+block scripts
+  script.
+    // Tìm kiếm tuyến xe
+    document.getElementById('searchRoute').addEventListener('input', function() {
+      const searchText = this.value.toLowerCase();
+      const rows = document.querySelectorAll('tbody tr');
+      
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchText) ? '' : 'none';
+      });
+    }); 

@@ -1,0 +1,63 @@
+extends ../../layout
+
+block content
+  .container-fluid.py-4
+    .row.justify-content-center
+      .col-md-8
+        .card.shadow
+          .card-body
+            h1.h3.mb-4= title
+
+            if messages.error
+              .alert.alert-danger.alert-dismissible.fade.show(role='alert')
+                = messages.error
+                button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+
+            form(method='POST' action=schedule.id ? `/admin/schedules/${schedule.id}` : '/admin/schedules')
+              .mb-3
+                label.form-label(for='route_id') Tuyến xe
+                select.form-select#route_id(name='route_id' required)
+                  option(value='') Chọn tuyến xe
+                  each route in routes
+                    option(value=route.id selected=schedule.route_id == route.id)
+                      | #{route.from_location} - #{route.to_location} (#{route.duration} phút)
+
+              .mb-3
+                label.form-label(for='departure_time') Thời gian khởi hành
+                input.form-control#departure_time(
+                  type='datetime-local'
+                  name='departure_time'
+                  required
+                  value=schedule.departure_time ? schedule.departure_time.slice(0, 16) : ''
+                )
+
+              .mb-3
+                label.form-label(for='price') Giá vé
+                .input-group
+                  input.form-control#price(
+                    type='number'
+                    name='price'
+                    required
+                    min='0'
+                    step='1000'
+                    value=schedule.price || ''
+                  )
+                  span.input-group-text VNĐ
+
+              .mb-3
+                label.form-label(for='available_seats') Số ghế trống
+                input.form-control#available_seats(
+                  type='number'
+                  name='available_seats'
+                  required
+                  min='0'
+                  value=schedule.available_seats || ''
+                )
+
+              .d-flex.gap-2
+                button.btn.btn-primary(type='submit')
+                  i.fas.fa-save.me-2
+                  | Lưu lịch trình
+                a.btn.btn-secondary(href='/admin/schedules')
+                  i.fas.fa-times.me-2
+                  | Hủy 

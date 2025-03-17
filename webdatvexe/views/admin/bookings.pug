@@ -1,0 +1,121 @@
+extends ../layouts/admin
+
+block head
+  style.
+    .status-1 { background-color: #ffc107; color: #000; }
+    .status-2 { background-color: #198754; color: #fff; }
+    .status-3 { background-color: #dc3545; color: #fff; }
+    .status-4 { background-color: #0dcaf0; color: #fff; }
+
+    .status-option-1 { background-color: #ffc107; color: #000; }
+    .status-option-2 { background-color: #198754; color: #fff; }
+    .status-option-3 { background-color: #dc3545; color: #fff; }
+    .status-option-4 { background-color: #0dcaf0; color: #fff; }
+
+block content
+  h2.mb-4 Quản lý vé
+  
+  style.
+    .status-1 { background-color: #ffc107; color: #000; }
+    .status-2 { background-color: #198754; color: #fff; }
+    .status-3 { background-color: #dc3545; color: #fff; }
+    .status-4 { background-color: #0dcaf0; color: #fff; }
+
+    .status-option-1 { background-color: #ffc107; color: #000; }
+    .status-option-2 { background-color: #198754; color: #fff; }
+    .status-option-3 { background-color: #dc3545; color: #fff; }
+    .status-option-4 { background-color: #0dcaf0; color: #fff; }
+  
+  .card
+    .card-body
+      .table-responsive
+        table.table.table-hover
+          thead.bg-light
+            tr
+              th ID
+              th Khách hàng
+              th Tuyến xe
+              th Thời gian
+              th Số ghế
+              th Tổng tiền
+              th Trạng thái
+              th Thao tác
+          tbody
+            each booking in bookings
+              tr
+                td= booking.id
+                td
+                  .d-flex.flex-column
+                    strong= booking.customer_name
+                    small.text-muted= booking.phone
+                td
+                  .d-flex.flex-column
+                    span #{booking.from_location} - #{booking.to_location}
+                    small.text-muted #{booking.departure_time} - #{booking.arrival_time}
+                td= booking.booking_date
+                td= booking.seats
+                td= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(booking.total_price)
+                td
+                  select.form-select.booking-status(
+                    data-booking-id=booking.id
+                    class=`status-${booking.status_id}`
+                  )
+                    each status in statuses
+                      option(
+                        value=status.id
+                        selected=status.id === booking.status_id
+                        class=`status-option-${status.id}`
+                      )= status.name
+                td
+                  .btn-group
+                    button.btn.btn-info.btn-sm.me-2(onclick=`viewBooking(${booking.id})`)
+                      i.fas.fa-eye
+                    button.btn.btn-danger.btn-sm(onclick=`deleteBooking(${booking.id})`)
+                      i.fas.fa-trash
+
+block scripts
+  script.
+    // Cập nhật trạng thái vé
+    document.querySelectorAll('.booking-status').forEach(select => {
+      select.addEventListener('change', function() {
+        const bookingId = this.dataset.bookingId;
+        const statusId = this.value;
+
+        fetch(`/admin/bookings/${bookingId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status_id: statusId })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            this.className = `form-select booking-status status-${statusId}`;
+            alert('Cập nhật trạng thái vé thành công');
+          } else {
+            alert(data.message);
+          }
+        });
+      });
+    });
+
+    function viewBooking(id) {
+      window.location.href = `/admin/bookings/${id}`;
+    }
+
+    function deleteBooking(id) {
+      if (confirm('Bạn có chắc chắn muốn xóa vé này?')) {
+        fetch(`/admin/bookings/${id}`, {
+          method: 'DELETE'
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            window.location.reload();
+          } else {
+            alert(data.message);
+          }
+        });
+      }
+    } 

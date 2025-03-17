@@ -1,0 +1,334 @@
+/**
+ * Banner Styles - Enhanced version
+ * Tối ưu hiển thị banner cho trang chủ
+ */
+
+/* Hiệu ứng chung */
+.banner-section {
+  overflow: hidden;
+  position: relative;
+}
+
+.banner-section::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-image: linear-gradient(to right, transparent, rgba(26,35,126,0.3), transparent);
+  z-index: 5;
+}
+
+/* Banner Slider Controls */
+.banner-slider .slick-prev,
+.banner-slider .slick-next {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: rgba(255,255,255,0.2);
+  backdrop-filter: blur(5px);
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.banner-slider .slick-prev {
+  left: 15px;
+}
+
+.banner-slider .slick-next {
+  right: 15px;
+}
+
+.banner-slider .slick-prev:hover,
+.banner-slider .slick-next:hover {
+  background-color: rgba(255,255,255,0.4);
+  transform: scale(1.1);
+}
+
+.banner-slider .slick-prev:before,
+.banner-slider .slick-next:before {
+  font-size: 20px;
+  opacity: 0.8;
+}
+
+/* Banner Dots Navigation */
+.banner-slider .slick-dots {
+  bottom: 15px;
+  z-index: 5;
+}
+
+.banner-slider .slick-dots li {
+  margin: 0 4px;
+}
+
+.banner-slider .slick-dots li button:before {
+  font-size: 10px;
+  color: white;
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.banner-slider .slick-dots li.slick-active button:before {
+  color: white;
+  opacity: 1;
+  transform: scale(1.3);
+}
+
+/* Top Banner - Full Hero Styles */
+.top-banner-section {
+  position: relative;
+}
+
+.top-banner-slider .banner-slide {
+  position: relative;
+}
+
+.top-banner-slider .banner-slide::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%);
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.top-banner-slider .banner-slide:hover::before {
+  opacity: 1;
+}
+
+.top-banner-slider img {
+  width: 100%;
+  height: 480px;
+  object-fit: cover;
+  transition: transform 6s ease, filter 0.4s ease;
+}
+
+.top-banner-slider .slick-active img {
+  animation: kenBurns 10s ease;
+}
+
+@keyframes kenBurns {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Middle Banner - Feature Content */
+.middle-banner-section {
+  padding: 60px 0;
+}
+
+.middle-banner-slider .banner-slide {
+  margin: 10px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  transition: all 0.4s ease;
+}
+
+.middle-banner-slider .banner-slide:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+}
+
+.middle-banner-slider img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.middle-banner-slider .banner-slide:hover img {
+  transform: scale(1.08);
+}
+
+/* Bottom Banner - Promotions Row */
+.bottom-banner-section {
+  background-color: #f5f7fa;
+  padding: 50px 0;
+}
+
+.bottom-banner-slider .banner-slide {
+  margin: 15px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.bottom-banner-slider .banner-slide:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.bottom-banner-slider img {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.bottom-banner-slider .banner-slide:hover img {
+  transform: scale(1.05);
+}
+
+/* Banner Caption Styling */
+.banner-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));
+  color: white;
+  z-index: 2;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.banner-slide:hover .banner-caption {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.banner-caption h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+}
+
+.banner-caption p {
+  font-size: 1.1rem;
+  margin-bottom: 0;
+  opacity: 0.9;
+}
+
+/* Section Title Styling */
+.section-title {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 40px;
+  padding-bottom: 12px;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 3px;
+  background-color: #1a237e;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+  .top-banner-slider img {
+    height: 420px;
+  }
+  
+  .middle-banner-slider img {
+    height: 280px;
+  }
+  
+  .bottom-banner-slider img {
+    height: 240px;
+  }
+}
+
+@media (max-width: 992px) {
+  .top-banner-slider img {
+    height: 380px;
+  }
+  
+  .middle-banner-slider img,
+  .bottom-banner-slider img {
+    height: 220px;
+  }
+  
+  .banner-caption h3 {
+    font-size: 1.5rem;
+  }
+  
+  .banner-caption p {
+    font-size: 1rem;
+  }
+  
+  .banner-slider .slick-prev,
+  .banner-slider .slick-next {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+@media (max-width: 768px) {
+  .top-banner-slider img {
+    height: 320px;
+  }
+  
+  .middle-banner-slider .banner-slide,
+  .bottom-banner-slider .banner-slide {
+    margin: 8px;
+  }
+  
+  .banner-caption {
+    padding: 1.5rem;
+  }
+  
+  .banner-caption h3 {
+    font-size: 1.3rem;
+  }
+  
+  .section-title {
+    margin-bottom: 30px;
+  }
+}
+
+@media (max-width: 576px) {
+  .top-banner-slider img {
+    height: 240px;
+  }
+  
+  .middle-banner-slider img,
+  .bottom-banner-slider img {
+    height: 180px;
+  }
+  
+  .banner-caption {
+    padding: 1rem;
+  }
+  
+  .banner-caption h3 {
+    font-size: 1.2rem;
+  }
+  
+  .banner-caption p {
+    font-size: 0.9rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .banner-slider .slick-dots {
+    bottom: 5px;
+  }
+  
+  .banner-slider .slick-dots li button:before {
+    font-size: 8px;
+  }
+} 

@@ -1,0 +1,216 @@
+extends ../../admin/layout
+
+block content
+  .container-fluid.py-4
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h1.h3.mb-0
+        i.fas.fa-plus.me-2
+        | Thêm Banner Mới
+      a.btn.btn-outline-secondary(href='/admin/banners')
+        i.fas.fa-arrow-left.me-2
+        | Quay lại
+
+    if messages && messages.error
+      .alert.alert-danger.alert-dismissible.fade.show
+        = messages.error
+        button.btn-close(type='button' data-bs-dismiss='alert')
+
+    .card.shadow
+      .card-body
+        form(action='/admin/banners/create' method='POST' enctype='multipart/form-data')
+          .row
+            .col-md-8
+              .mb-3
+                label.form-label.fw-medium(for='title') Tiêu đề banner
+                input.form-control#title(
+                  type='text'
+                  name='title'
+                  required
+                  placeholder='Nhập tiêu đề banner'
+                )
+              
+              .mb-3
+                label.form-label.fw-medium(for='description') Mô tả
+                textarea.form-control#description(
+                  name='description'
+                  rows='3'
+                  placeholder='Nhập mô tả ngắn gọn (tùy chọn)'
+                )
+              
+              .mb-3
+                label.form-label.fw-medium(for='link') Liên kết
+                .input-group
+                  span.input-group-text
+                    i.fas.fa-link
+                  input.form-control#link(
+                    type='text'
+                    name='link'
+                    placeholder='Nhập URL đích (mặc định: #)'
+                    value='#'
+                  )
+              
+              .row.mb-3
+                .col-md-6
+                  label.form-label.fw-medium(for='start_date') Ngày bắt đầu
+                  input.form-control#start_date(
+                    type='date'
+                    name='start_date'
+                    placeholder='Để trống nếu không giới hạn'
+                  )
+                
+                .col-md-6
+                  label.form-label.fw-medium(for='end_date') Ngày kết thúc
+                  input.form-control#end_date(
+                    type='date'
+                    name='end_date'
+                    placeholder='Để trống nếu không giới hạn'
+                  )
+            
+            .col-md-4
+              .mb-3
+                label.form-label.fw-medium Hình ảnh banner
+                ul.nav.nav-tabs.mb-3#imageTabs
+                  li.nav-item
+                    a.nav-link.active#upload-tab(data-bs-toggle='tab' href='#upload-content') Tải lên
+                  li.nav-item
+                    a.nav-link#url-tab(data-bs-toggle='tab' href='#url-content') Sử dụng URL
+                
+                .tab-content
+                  .tab-pane.fade.show.active#upload-content
+                    input.form-control#image(
+                      type='file'
+                      name='image'
+                      accept='image/*'
+                    )
+                    .form-text.text-muted Kích thước đề xuất: 1200x400px hoặc tỷ lệ 3:1
+                  
+                  .tab-pane.fade#url-content
+                    .input-group
+                      span.input-group-text
+                        i.fas.fa-image
+                      input.form-control#image_url(
+                        type='url'
+                        name='image_url'
+                        placeholder='https://example.com/image.jpg'
+                      )
+                    .form-text.text-muted Nhập URL trực tiếp đến hình ảnh
+                
+                div#preview_container.mt-3.d-none
+                  label.form-label Xem trước
+                  img#image_preview.img-fluid.img-thumbnail(alt='Preview' style="max-height: 200px;")
+              
+              .mb-3
+                label.form-label.fw-medium(for='position') Vị trí hiển thị
+                select.form-select#position(name='position' required)
+                  option(value='') Chọn vị trí hiển thị
+                  option(value='home_top') Trang chủ (Trên cùng)
+                  option(value='home_middle') Trang chủ (Giữa)
+                  option(value='home_bottom') Trang chủ (Dưới)
+                  option(value='sidebar') Thanh bên
+              
+              .mb-3
+                label.form-label.fw-medium(for='order_index') Thứ tự hiển thị
+                input.form-control#order_index(
+                  type='number'
+                  name='order_index'
+                  min='0'
+                  value='0'
+                )
+              
+              .mb-3
+                .form-check.form-switch
+                  input.form-check-input#show_title(
+                    type='checkbox'
+                    name='show_title'
+                  )
+                  label.form-check-label(for='show_title') Hiển thị tiêu đề trên banner
+              
+              .mb-3
+                .form-check.form-switch
+                  input.form-check-input#new_tab(
+                    type='checkbox'
+                    name='new_tab'
+                  )
+                  label.form-check-label(for='new_tab') Mở trong tab mới
+              
+              .mb-3
+                .form-check.form-switch
+                  input.form-check-input#status(
+                    type='checkbox'
+                    name='status'
+                    value='active'
+                    checked
+                  )
+                  label.form-check-label(for='status') Kích hoạt banner
+          
+          .d-flex.justify-content-end.mt-4
+            button.btn.btn-secondary.me-2(type='reset')
+              i.fas.fa-undo.me-2
+              | Làm lại
+            button.btn.btn-primary(type='submit')
+              i.fas.fa-save.me-2
+              | Thêm banner
+
+block scripts
+  script.
+    // Xem trước hình ảnh khi tải lên
+    document.getElementById('image').addEventListener('change', function(e) {
+      const preview = document.getElementById('image_preview');
+      const previewContainer = document.getElementById('preview_container');
+      const file = e.target.files[0];
+      
+      if (file) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+          previewContainer.classList.remove('d-none');
+          
+          // Nếu tải file mới, chuyển tab thành tab tải lên
+          document.getElementById('upload-tab').click();
+          // Xóa URL nếu có
+          document.getElementById('image_url').value = '';
+        }
+        
+        reader.readAsDataURL(file);
+      } else {
+        previewContainer.classList.add('d-none');
+      }
+    });
+    
+    // Xem trước hình ảnh khi nhập URL
+    document.getElementById('image_url').addEventListener('change', function(e) {
+      const url = this.value.trim();
+      const preview = document.getElementById('image_preview');
+      const previewContainer = document.getElementById('preview_container');
+      
+      if (url) {
+        preview.src = url;
+        previewContainer.classList.remove('d-none');
+        
+        // Nếu nhập URL, xóa file được chọn
+        document.getElementById('image').value = '';
+        
+        // Chuyển tab thành tab URL
+        document.getElementById('url-tab').click();
+        
+        // Xử lý sự kiện lỗi khi tải hình ảnh
+        preview.onerror = function() {
+          alert('Không thể tải hình ảnh từ URL. Vui lòng kiểm tra lại.');
+          previewContainer.classList.add('d-none');
+        };
+      } else {
+        previewContainer.classList.add('d-none');
+      }
+    });
+    
+    // Kiểm tra ngày
+    document.getElementById('end_date').addEventListener('change', function() {
+      const startDate = document.getElementById('start_date').value;
+      const endDate = this.value;
+      
+      if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+        alert('Ngày kết thúc phải sau ngày bắt đầu');
+        this.value = '';
+      }
+    }); 

@@ -1,0 +1,112 @@
+extends ../layout
+
+block content
+  .container-fluid
+    .row
+      // Sidebar
+      include ../partials/admin-sidebar
+      
+      // Main content
+      .col-md-10.p-4
+        h2.mb-4 Quản lý vé xe
+        
+        .card
+          .card-header
+            .row.align-items-center
+              .col
+                h5.mb-0 Danh sách vé
+              .col-auto
+                .input-group
+                  input#searchTicket.form-control(type="text" placeholder="Tìm kiếm...")
+                  button.btn.btn-outline-secondary(type="button")
+                    i.fas.fa-search
+          
+          .card-body
+            .table-responsive
+              table.table.table-hover
+                thead
+                  tr
+                    th ID
+                    th Khách hàng
+                    th Tuyến xe
+                    th Thời gian
+                    th Số ghế
+                    th Tổng tiền
+                    th Trạng thái
+                    th Người đặt
+                    th Thao tác
+                tbody
+                  each ticket in tickets
+                    tr
+                      td= ticket.id
+                      td
+                        .d-flex.flex-column
+                          span= ticket.customer_name
+                          small.text-muted= ticket.phone
+                          small.text-muted= ticket.email
+                      td
+                        .d-flex.flex-column
+                          span #{ticket.from_location} - #{ticket.to_location}
+                          small.text-muted= ticket.bus_type
+                      td
+                        .d-flex.flex-column
+                          span= new Date(ticket.departure_time).toLocaleString('vi-VN')
+                          small.text-muted Đặt: #{new Date(ticket.booking_date).toLocaleDateString('vi-VN')}
+                      td= ticket.seats
+                      td= ticket.total_price.toLocaleString('vi-VN') + 'đ'
+                      td
+                        select.form-select.ticket-status(
+                          data-ticket-id=ticket.id
+                          style=`background-color: ${ticket.status_color}`
+                        )
+                          each status in statuses
+                            option(
+                              value=status.id
+                              selected=status.id === ticket.status_id
+                            )= status.name
+                      td= ticket.booked_by || 'Khách vãng lai'
+                      td
+                        button.btn.btn-sm.btn-info.me-2(onclick=`viewTicket(${ticket.id})`)
+                          i.fas.fa-eye
+                        button.btn.btn-sm.btn-danger(onclick=`deleteTicket(${ticket.id})`)
+                          i.fas.fa-trash
+
+block scripts
+  script.
+    // Cập nhật trạng thái vé
+    document.querySelectorAll('.ticket-status').forEach(select => {
+      select.addEventListener('change', function() {
+        const ticketId = this.dataset.ticketId;
+        const statusId = this.value;
+        
+        fetch(`/admin/tickets/${ticketId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ statusId })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            // Cập nhật màu nền của select
+            const selectedOption = this.options[this.selectedIndex];
+            this.style.backgroundColor = selectedOption.dataset.color;
+            alert('Cập nhật trạng thái thành công');
+          } else {
+            alert(data.message);
+          }
+        });
+      });
+    });
+
+    // Tìm kiếm vé
+    document.getElementById('searchTicket').addEventListener('input', function() {
+      const searchText = this.value.toLowerCase();
+      const rows = document.querySelectorAll('tbody tr');
+      
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchText) ? '' : 'none';
+      });
+    }); 

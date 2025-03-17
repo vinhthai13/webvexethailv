@@ -1,0 +1,102 @@
+extends ../../layout
+
+block content
+  .container.py-4
+    .row
+      .col-lg-8.mx-auto
+        .card.shadow
+          .card-body
+            h1.card-title.mb-4.text-center Đặt vé xe
+            
+            if route
+              .alert.alert-info.mb-4
+                .d-flex.align-items-center.mb-3
+                  i.fas.fa-route.fa-2x.me-3
+                  h5.mb-0 #{route.from_location} - #{route.to_location}
+                
+                .row.text-center
+                  .col-md-4.mb-3.mb-md-0
+                    i.fas.fa-clock.me-2
+                    | #{route.duration} giờ
+                  .col-md-4.mb-3.mb-md-0
+                    i.fas.fa-bus.me-2
+                    | #{route.trip_count} chuyến/ngày
+                  .col-md-4
+                    i.fas.fa-tag.me-2
+                    | Từ #{route.min_price.toLocaleString('vi-VN')}đ
+            
+            if schedules && schedules.length > 0
+              form#bookingForm(action='/dat-ve' method='POST')
+                .mb-4
+                  label.form-label(for='schedule') Chọn chuyến xe
+                  select#schedule.form-select(name='schedule_id' required)
+                    option(value='') Chọn chuyến xe
+                    each schedule in schedules
+                      - const departureTime = new Date(schedule.date + ' ' + schedule.departure_time)
+                      - const arrivalTime = new Date(schedule.date + ' ' + schedule.arrival_time)
+                      option(value=schedule.id data-price=schedule.price data-seats=schedule.available_seats)
+                        | #{departureTime.toLocaleString('vi-VN')} - #{schedule.bus_type} - #{schedule.price.toLocaleString('vi-VN')}đ (#{schedule.available_seats} ghế trống)
+                
+                .mb-4
+                  label.form-label(for='seats') Số lượng vé
+                  input#seats.form-control(type='number' name='seats' min='1' required)
+                  .form-text Số ghế trống: <span id="availableSeats">-</span>
+                
+                .mb-4
+                  label.form-label(for='customer_name') Họ tên hành khách
+                  input#customer_name.form-control(type='text' name='customer_name' required)
+                
+                .row.mb-4
+                  .col-md-6
+                    label.form-label(for='phone') Số điện thoại
+                    input#phone.form-control(type='tel' name='phone' required)
+                  .col-md-6
+                    label.form-label(for='email') Email
+                    input#email.form-control(type='email' name='email' required)
+                
+                .mb-4
+                  label.form-label Tổng tiền
+                  .input-group
+                    input#total_price.form-control(type='text' name='total_price' readonly)
+                    span.input-group-text đ
+                
+                .text-center
+                  button.btn.btn-primary(type='submit')
+                    i.fas.fa-ticket-alt.me-2
+                    | Đặt vé
+            else
+              .alert.alert-warning.mb-0
+                i.fas.fa-exclamation-triangle.me-2
+                | Không có chuyến xe nào phù hợp. Vui lòng thử lại sau.
+
+block scripts
+  script.
+    $(document).ready(function() {
+      const scheduleSelect = $('#schedule');
+      const seatsInput = $('#seats');
+      const totalPriceInput = $('#total_price');
+      const availableSeatsSpan = $('#availableSeats');
+      
+      function updateTotalPrice() {
+        const selectedOption = scheduleSelect.find('option:selected');
+        const price = selectedOption.data('price') || 0;
+        const seats = seatsInput.val() || 0;
+        const total = price * seats;
+        totalPriceInput.val(total.toLocaleString('vi-VN'));
+      }
+      
+      function updateAvailableSeats() {
+        const selectedOption = scheduleSelect.find('option:selected');
+        const availableSeats = selectedOption.data('seats') || 0;
+        availableSeatsSpan.text(availableSeats);
+        seatsInput.attr('max', availableSeats);
+      }
+      
+      scheduleSelect.change(function() {
+        updateAvailableSeats();
+        updateTotalPrice();
+      });
+      
+      seatsInput.change(updateTotalPrice);
+      seatsInput.keyup(updateTotalPrice);
+    }); 

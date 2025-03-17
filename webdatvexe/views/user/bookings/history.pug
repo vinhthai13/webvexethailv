@@ -1,0 +1,41 @@
+extends ../../layouts/user
+
+block content
+  .container.mt-4
+    h2.mb-4 Lịch sử đặt vé
+
+    if bookings && bookings.length > 0
+      .table-responsive
+        table.table.table-hover
+          thead
+            tr
+              th Mã vé
+              th Tuyến xe
+              th Thời gian
+              th Số ghế
+              th Tổng tiền
+              th Trạng thái
+              th Thao tác
+          tbody
+            each booking in bookings
+              tr
+                td= booking.id
+                td #{booking.from_location} - #{booking.to_location}
+                td= booking.departure_time
+                td= booking.seats
+                td= booking.total_price.toLocaleString('vi-VN') + 'đ'
+                td
+                  span.badge.bg-primary= booking.status_name
+                td
+                  a.btn.btn-info.btn-sm(href=`/dat-ve/chi-tiet/${booking.id}`)
+                    i.fas.fa-eye.me-1
+                    | Chi tiết
+    else
+      .alert.alert-info
+        i.fas.fa-info-circle.me-2
+        | Bạn chưa có đơn đặt vé nào
+
+    .mt-4
+      a.btn.btn-primary(href='/')
+        i.fas.fa-home.me-2
+        | Về trang chủ 

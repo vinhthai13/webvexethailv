@@ -1,0 +1,70 @@
+extends ../layouts/user
+
+block content
+  .container.py-5
+    .card.shadow-sm
+      .card-body
+        form.search-form(action="/search/results" method="GET")
+          .row.g-3
+            .col-md-4
+              label.form-label(for="from") Điểm đi
+              select.form-select#from(name="from" required)
+                option(value="") Chọn điểm đi
+                each location in fromLocations
+                  option(value=location selected=searchParams && searchParams.from === location)= location
+            
+            .col-md-4
+              label.form-label(for="to") Điểm đến
+              select.form-select#to(name="to" required)
+                option(value="") Chọn điểm đến
+                each location in toLocations
+                  option(value=location selected=searchParams && searchParams.to === location)= location
+            
+            .col-md-3
+              label.form-label(for="date") Ngày đi
+              input.form-control#date(
+                type="date"
+                name="date"
+                value=searchParams ? searchParams.date : ''
+                required
+              )
+            
+            .col-md-1.d-flex.align-items-end
+              button.btn.btn-primary.w-100(type="submit")
+                i.fas.fa-search
+
+        if results && results.length > 0
+          .search-results.mt-4
+            h4.mb-3 Kết quả tìm kiếm
+            .table-responsive
+              table.table.table-hover
+                thead
+                  tr
+                    th Tuyến xe
+                    th Khoảng cách
+                    th Thời gian
+                    th Giá vé
+                    th Mô tả
+                    th
+                tbody
+                  each result in results
+                    tr
+                      td #{result.from_location} - #{result.to_location}
+                      td= result.distance + ' km'
+                      td= result.duration
+                      td= result.price.toLocaleString('vi-VN') + ' VNĐ'
+                      td= result.description
+                      td
+                        a.btn.btn-sm.btn-primary(href=`/lich-trinh?route=${result.id}`)
+                          i.fas.fa-calendar-alt.me-1
+                          | Xem lịch trình
+        else if results && results.length === 0
+          .alert.alert-info.mt-4
+            i.fas.fa-info-circle.me-2
+            | Không tìm thấy tuyến xe phù hợp
+
+block scripts
+  script.
+    // Prevent selecting past dates
+    const dateInput = document.getElementById('date');
+    dateInput.min = new Date().toISOString().split('T')[0]; 

@@ -1,0 +1,92 @@
+extends ../../layouts/user
+
+block head
+  link(rel="stylesheet", href="/css/routes.css")
+
+block content
+  .container.py-4
+    h1.text-center.mb-4 Tuyến xe
+
+    .card.shadow-sm.mb-4
+      .card-body
+        form.search-form(action="/tuyen-xe/search" method="GET")
+          .row.g-3.align-items-end
+            .col-md-5
+              label.form-label(for="from") Điểm đi
+              select.form-select#from(name="from")
+                option(value="") Chọn điểm đi
+                each location in fromLocations
+                  option(value=location selected=searchParams && searchParams.from === location)= location
+            
+            .col-md-5
+              label.form-label(for="to") Điểm đến
+              select.form-select#to(name="to")
+                option(value="") Chọn điểm đến
+                each location in toLocations
+                  option(value=location selected=searchParams && searchParams.to === location)= location
+            
+            .col-md-2
+              button.btn.btn-primary.w-100(type="submit")
+                i.fas.fa-search.me-2
+                | Tìm kiếm
+
+    if results && results.length > 0
+      .row
+        each route in results
+          .col-lg-6.mb-4
+            .card.route-card.h-100
+              .row.g-0
+                .col-md-4
+                  if route.image
+                    img.img-fluid.rounded-start.h-100(
+                      src=route.image 
+                      alt=`${route.from_location} - ${route.to_location}`
+                      style="object-fit: cover; height: 100%;"
+                    )
+                  else
+                    .bg-light.d-flex.justify-content-center.align-items-center.h-100.rounded-start
+                      i.fas.fa-map-marked-alt.fa-3x.text-muted
+                
+                .col-md-8
+                  .card-body
+                    h5.card-title.mb-3
+                      i.fas.fa-map-marker-alt.text-danger.me-2
+                      span.fw-medium #{route.from_location}
+                      i.fas.fa-long-arrow-alt-right.text-muted.mx-2
+                      i.fas.fa-map-marker-alt.text-success.me-2
+                      span.fw-medium #{route.to_location}
+                    
+                    .card-text.mb-2
+                      i.fas.fa-road.text-muted.me-2
+                      span Khoảng cách: 
+                      span.fw-medium #{route.distance} km
+                    
+                    .card-text.mb-2
+                      i.fas.fa-clock.text-muted.me-2
+                      span Thời gian: 
+                      span.fw-medium #{route.duration}
+                    
+                    .card-text.mb-3
+                      i.fas.fa-tag.text-muted.me-2
+                      span Giá vé: 
+                      span.fw-bold.text-primary #{route.price.toLocaleString('vi-VN')} VNĐ
+                    
+                    a.btn.btn-primary.btn-sm.w-100(href=`/lich-trinh?route=${route.id}`)
+                      i.fas.fa-calendar-alt.me-1
+                      | Xem lịch trình
+    else if results && results.length === 0
+      .alert.alert-info
+        i.fas.fa-info-circle.me-2
+        | Không tìm thấy tuyến xe phù hợp
+
+block scripts
+  script.
+    // Thêm các xử lý JavaScript nếu cần
+
+    // Thêm JavaScript để xử lý dependent dropdown nếu cần
+    const fromSelect = document.getElementById('from');
+    const toSelect = document.getElementById('to');
+
+    fromSelect.addEventListener('change', function() {
+      // Logic để lọc điểm đến dựa trên điểm đi
+    }); 

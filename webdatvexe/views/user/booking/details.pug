@@ -1,0 +1,100 @@
+extends ../../layout
+
+block content
+  .container.py-4
+    .row
+      .col-lg-8.mx-auto
+        .card.shadow
+          .card-body
+            h1.card-title.mb-4.text-center Chi tiết đặt vé
+            
+            .alert(class=`alert-${booking.status_color}`)
+              .d-flex.align-items-center
+                i.fas.fa-info-circle.fa-2x.me-3
+                div
+                  h5.alert-heading.mb-1 Trạng thái: #{booking.status_name}
+                  p.mb-0 Mã đặt vé: #{booking.id}
+            
+            .row.mb-4
+              .col-md-6
+                h5.mb-3 Thông tin chuyến xe
+                p.mb-2
+                  i.fas.fa-route.text-muted.me-2
+                  | #{booking.from_location} - #{booking.to_location}
+                p.mb-2
+                  i.fas.fa-calendar.text-muted.me-2
+                  | #{formatDate(booking.booking_date)}
+                p.mb-2
+                  i.fas.fa-clock.text-muted.me-2
+                  | #{booking.departure_time} - #{booking.arrival_time}
+                p.mb-0
+                  i.fas.fa-bus.text-muted.me-2
+                  | #{booking.bus_type}
+              
+              .col-md-6
+                h5.mb-3 Thông tin hành khách
+                p.mb-2
+                  i.fas.fa-user.text-muted.me-2
+                  | #{booking.customer_name}
+                p.mb-2
+                  i.fas.fa-phone.text-muted.me-2
+                  | #{booking.phone}
+                p.mb-2
+                  i.fas.fa-envelope.text-muted.me-2
+                  | #{booking.email}
+                p.mb-0
+                  i.fas.fa-ticket-alt.text-muted.me-2
+                  | #{booking.seats} vé
+            
+            .row.mb-4
+              .col-md-6
+                h5.mb-3 Thông tin thanh toán
+                p.mb-2
+                  i.fas.fa-tag.text-muted.me-2
+                  | Giá vé: #{booking.ticket_price.toLocaleString('vi-VN')}đ/vé
+                p.mb-2
+                  i.fas.fa-calculator.text-muted.me-2
+                  | Số lượng: #{booking.seats} vé
+                p.mb-0
+                  i.fas.fa-money-bill.text-muted.me-2
+                  span.text-danger.fw-bold Tổng tiền: #{booking.total_price.toLocaleString('vi-VN')}đ
+              
+              .col-md-6
+                h5.mb-3 Thông tin đặt vé
+                p.mb-2
+                  i.fas.fa-calendar-check.text-muted.me-2
+                  | Ngày đặt: #{formatDate(booking.created_at)}
+                p.mb-2
+                  i.fas.fa-user-circle.text-muted.me-2
+                  | Người đặt: #{booking.booked_by}
+            
+            .text-center.mt-4
+              if booking.status_code === 'pending'
+                button.btn.btn-danger.me-2#cancelBooking(data-id=booking.id)
+                  i.fas.fa-times.me-2
+                  | Hủy vé
+              a.btn.btn-outline-primary(href='/dat-ve/lich-su')
+                i.fas.fa-arrow-left.me-2
+                | Quay lại
+
+block scripts
+  script.
+    $(document).ready(function() {
+      $('#cancelBooking').click(function() {
+        const bookingId = $(this).data('id');
+        if (confirm('Bạn có chắc chắn muốn hủy vé này không?')) {
+          $.post(`/dat-ve/huy/${bookingId}`)
+            .done(function(response) {
+              if (response.success) {
+                alert('Hủy vé thành công');
+                window.location.href = '/dat-ve/lich-su';
+              } else {
+                alert(response.message || 'Có lỗi xảy ra');
+              }
+            })
+            .fail(function() {
+              alert('Có lỗi xảy ra');
+            });
+        }
+      });
+    }); 

@@ -1,0 +1,61 @@
+extends ../layout
+
+block content
+  .container-fluid.py-4
+    .row.justify-content-center
+      .col-md-8
+        .card.shadow
+          .card-body
+            h1.h3.mb-4= title
+
+            if messages.error
+              .alert.alert-danger.alert-dismissible.fade.show(role='alert')
+                = messages.error
+                button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+
+            form(method='POST' action=user.id ? `/admin/users/${user.id}` : '/admin/users')
+              .mb-3
+                label.form-label(for='username') Tên đăng nhập
+                input.form-control#username(
+                  type='text'
+                  name='username'
+                  required
+                  value=user.username || ''
+                  placeholder='Nhập tên đăng nhập'
+                )
+
+              .mb-3
+                label.form-label(for='email') Email
+                input.form-control#email(
+                  type='email'
+                  name='email'
+                  required
+                  value=user.email || ''
+                  placeholder='Nhập địa chỉ email'
+                )
+
+              .mb-3
+                label.form-label(for='phone') Số điện thoại
+                input.form-control#phone(
+                  type='tel'
+                  name='phone'
+                  value=user.phone || ''
+                  placeholder='Nhập số điện thoại'
+                )
+
+              .mb-3
+                label.form-label(for='password') #{user.id ? 'Mật khẩu mới (để trống nếu không đổi)' : 'Mật khẩu'}
+                input.form-control#password(
+                  type='password'
+                  name='password'
+                  required=!user.id
+                  placeholder=user.id ? 'Nhập mật khẩu mới' : 'Nhập mật khẩu'
+                )
+
+              .d-flex.gap-2
+                button.btn.btn-primary(type='submit')
+                  i.fas.fa-save.me-2
+                  | Lưu người dùng
+                a.btn.btn-secondary(href='/admin/users')
+                  i.fas.fa-times.me-2
+                  | Hủy 

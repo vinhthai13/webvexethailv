@@ -1,0 +1,171 @@
+extends ../layout
+
+block content
+  .container-fluid.py-4
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h1.h3.mb-0
+        i.fas.fa-route.me-2
+        | Thêm tuyến xe mới
+      a.btn.btn-secondary(href='/admin/routes')
+        i.fas.fa-arrow-left.me-2
+        | Quay lại
+
+    if messages.error
+      .alert.alert-danger.alert-dismissible.fade.show
+        i.fas.fa-exclamation-circle.me-2
+        = messages.error
+        button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+    
+    if messages.success
+      .alert.alert-success.alert-dismissible.fade.show
+        i.fas.fa-check-circle.me-2
+        = messages.success
+        button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+    
+    .card.shadow
+      .card-header.bg-light
+        h5.mb-0
+          i.fas.fa-info-circle.me-2
+          | Thông tin tuyến xe
+      .card-body
+        form(action='/admin/routes' method='POST')
+          .row
+            .col-md-6.mb-3
+              label.form-label(for='from_location')
+                i.fas.fa-map-marker-alt.me-1
+                | Điểm đi
+              input#from_location.form-control(type='text' name='from_location' required placeholder='Nhập tên thành phố/tỉnh')
+            
+            .col-md-6.mb-3
+              label.form-label(for='to_location')
+                i.fas.fa-map-marker.me-1
+                | Điểm đến
+              input#to_location.form-control(type='text' name='to_location' required placeholder='Nhập tên thành phố/tỉnh')
+          
+          .row
+            .col-md-4.mb-3
+              label.form-label(for='distance')
+                i.fas.fa-road.me-1
+                | Khoảng cách (km)
+              input#distance.form-control(type='number' name='distance' min='1' required placeholder='Nhập khoảng cách')
+            
+            .col-md-4.mb-3
+              label.form-label(for='duration')
+                i.fas.fa-clock.me-1
+                | Thời gian di chuyển (giờ)
+              input#duration.form-control(type='number' name='duration' step='0.5' min='0.5' required placeholder='Nhập thời gian')
+            
+            .col-md-4.mb-3
+              label.form-label(for='base_price')
+                i.fas.fa-tag.me-1
+                | Giá cơ bản (VNĐ)
+              input#base_price.form-control(type='text' name='base_price' required placeholder='Nhập giá cơ bản')
+          
+          .row
+            .col-md-12.mb-3
+              label.form-label(for='description')
+                i.fas.fa-info.me-1
+                | Mô tả tuyến đường
+              textarea#description.form-control(name='description' rows='4' placeholder='Nhập thông tin chi tiết về tuyến đường, các điểm dừng, dịch vụ...')
+          
+          .row
+            .col-md-6.mb-3
+              label.form-label(for='departure_location')
+                i.fas.fa-building.me-1
+                | Địa điểm đón khách
+              input#departure_location.form-control(type='text' name='departure_location' placeholder='Nhập địa chỉ bến xe/điểm đón')
+            
+            .col-md-6.mb-3
+              label.form-label(for='arrival_location')
+                i.fas.fa-building.me-1
+                | Địa điểm trả khách
+              input#arrival_location.form-control(type='text' name='arrival_location' placeholder='Nhập địa chỉ bến xe/điểm trả')
+          
+          .row
+            .col-md-6.mb-3
+              label.form-label(for='route_image')
+                i.fas.fa-image.me-1
+                | Hình ảnh tuyến đường
+              input#route_image.form-control(type='file' name='route_image')
+              .form-text Hình ảnh minh họa cho tuyến đường (không bắt buộc)
+            
+            .col-md-6.mb-3
+              label.form-label(for='status')
+                i.fas.fa-toggle-on.me-1
+                | Trạng thái
+              select#status.form-select(name='status')
+                option(value='1' selected) Hoạt động
+                option(value='0') Tạm ngưng
+          
+          .d-flex.justify-content-end.mt-4
+            button.btn.btn-secondary.me-2(type='reset')
+              i.fas.fa-undo.me-2
+              | Nhập lại
+            button.btn.btn-primary(type='submit')
+              i.fas.fa-save.me-2
+              | Thêm tuyến xe
+
+block scripts
+  script.
+    // Auto calculate duration based on distance
+    document.getElementById('distance').addEventListener('input', function() {
+      const distance = parseFloat(this.value);
+      if (distance) {
+        // Estimate duration based on distance (assuming 60km/h average speed)
+        const estimatedDuration = Math.round((distance / 60) * 2) / 2; // Round to nearest 0.5
+        document.getElementById('duration').value = estimatedDuration;
+        
+        // Auto-fill base price based on distance
+        const estimatedPrice = distance * 1000; // 1000 VND per km
+        document.getElementById('base_price').value = estimatedPrice.toLocaleString('vi-VN');
+      }
+    });
+    
+    // Format base price with thousand separator
+    document.getElementById('base_price').addEventListener('input', function() {
+      const value = this.value.replace(/,/g, '');
+      if (value) {
+        this.value = parseInt(value).toLocaleString('vi-VN');
+      }
+    });
+    
+    // Auto-suggest arrival location based on to_location
+    document.getElementById('to_location').addEventListener('input', function() {
+      const toLocation = this.value;
+      if (toLocation) {
+        document.getElementById('arrival_location').value = `Bến xe ${toLocation}`;
+      }
+    });
+    
+    // Auto-suggest departure location based on from_location
+    document.getElementById('from_location').addEventListener('input', function() {
+      const fromLocation = this.value;
+      if (fromLocation) {
+        document.getElementById('departure_location').value = `Bến xe ${fromLocation}`;
+      }
+    });
+    
+    // Generate description based on inputs
+    function updateDescription() {
+      const fromLocation = document.getElementById('from_location').value;
+      const toLocation = document.getElementById('to_location').value;
+      const distance = document.getElementById('distance').value;
+      const duration = document.getElementById('duration').value;
+      
+      if (fromLocation && toLocation && distance && duration) {
+        const description = `Tuyến xe từ ${fromLocation} đến ${toLocation} với quãng đường ${distance}km, thời gian di chuyển khoảng ${duration} giờ. Xe khởi hành từ bến xe ${fromLocation} và kết thúc tại bến xe ${toLocation}.`;
+        document.getElementById('description').value = description;
+      }
+    }
+    
+    // Update description when inputs change
+    document.getElementById('from_location').addEventListener('change', updateDescription);
+    document.getElementById('to_location').addEventListener('change', updateDescription);
+    document.getElementById('distance').addEventListener('change', updateDescription);
+    document.getElementById('duration').addEventListener('change', updateDescription);
+    
+    // Validate form before submit
+    document.querySelector('form').addEventListener('submit', function(e) {
+      const basePrice = document.getElementById('base_price').value;
+      document.getElementById('base_price').value = basePrice.replace(/,/g, '');
+    }); 

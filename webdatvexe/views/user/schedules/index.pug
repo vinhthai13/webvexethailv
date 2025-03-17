@@ -1,0 +1,122 @@
+extends ../../layouts/user
+
+block content
+  .container.mt-4
+    h1.text-center.mb-4 Lịch trình xe
+
+    // Stats cards
+    .row.mb-4
+      .col-md-3
+        .card.bg-primary.text-white
+          .card-body
+            h5.card-title Tổng số chuyến
+            h2.display-4= stats.total_schedules || 8
+      .col-md-3
+        .card.bg-success.text-white
+          .card-body
+            h5.card-title Tổng số ghế
+            h2.display-4= stats.total_seats || 338
+      .col-md-3
+        .card.bg-info.text-white
+          .card-body
+            h5.card-title Giá thấp nhất
+            h2.display-4= formatCurrency(stats.min_price || 300000)
+      .col-md-3
+        .card.bg-warning.text-white
+          .card-body
+            h5.card-title Giá cao nhất
+            h2.display-4= formatCurrency(stats.max_price || 500000)
+
+    // Search form
+    .card.mb-4
+      .card-body
+        form#searchForm(method='GET')
+          .row
+            .col-md-4
+              .form-group
+                label(for='from') Điểm đi
+                select#from.form-control(name='from')
+                  option(value='') Tất cả
+                  each location in locations
+                    option(value=location selected=location === query.from)= location
+            
+            .col-md-4
+              .form-group
+                label(for='to') Điểm đến
+                select#to.form-control(name='to')
+                  option(value='') Tất cả
+                  each location in locations
+                    option(value=location selected=location === query.to)= location
+            
+            .col-md-3
+              .form-group
+                label(for='date') Ngày đi
+                input#date.form-control(
+                  type='date'
+                  name='date'
+                  value=query.date
+                )
+            
+            .col-md-1.d-flex.align-items-end
+              button.btn.btn-primary.w-100(type='submit')
+                i.fas.fa-search
+
+    // Schedule list
+    .card
+      .card-header.bg-white
+        .d-flex.justify-content-between.align-items-center
+          h5.mb-0 Danh sách lịch trình
+          span.text-muted Tổng số: #{schedules.length} chuyến
+
+      .card-body
+        if schedules.length === 0
+          .alert.alert-info.text-center Không tìm thấy lịch trình phù hợp
+        else
+          .row
+            each schedule in schedules
+              .col-md-6.mb-4
+                .card.h-100.schedule-card
+                  .card-header.bg-light
+                    .d-flex.justify-content-between.align-items-center
+                      h5.mb-0 #{schedule.from_location} - #{schedule.to_location}
+                      span.badge.bg-primary #{schedule.duration}
+                  .card-body
+                    .row
+                      .col-md-4
+                        if schedule.image
+                          img.img-fluid.rounded(src=schedule.image alt=`${schedule.from_location} - ${schedule.to_location}` style="height: 100px; width: 100%; object-fit: cover;")
+                        else
+                          .bg-light.d-flex.justify-content-center.align-items-center.rounded(style="height: 100px;")
+                            i.fas.fa-bus.fa-3x.text-muted
+                      .col-md-8
+                        .mb-2
+                          i.fas.fa-calendar-alt.text-muted.me-2
+                          span.fw-medium #{schedule.formatted_date}
+                        .mb-2
+                          i.fas.fa-clock.text-muted.me-2
+                          span.fw-medium #{schedule.formatted_departure_time} - #{schedule.formatted_arrival_time}
+                        .mb-2
+                          i.fas.fa-bus.text-muted.me-2
+                          span.fw-medium #{schedule.bus_type}
+                        .mb-2
+                          i.fas.fa-chair.text-muted.me-2
+                          span.fw-medium Ghế trống: 
+                          span.badge.bg-info #{schedule.available_seats}
+                        .mb-2
+                          i.fas.fa-tag.text-muted.me-2
+                          span.fw-medium Giá vé: 
+                          span.text-success.fw-bold #{formatCurrency(schedule.price)}
+                  .card-footer.bg-white
+                    a.btn.btn-primary.btn-sm.w-100(href=`/dat-ve/schedule/${schedule.id}`)
+                      i.fas.fa-ticket-alt.me-1
+                      | Đặt vé
+
+block scripts
+  script.
+    // Format date input to local timezone
+    document.getElementById('date').addEventListener('change', function() {
+      const date = new Date(this.value);
+      const offset = date.getTimezoneOffset();
+      const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+      this.value = localDate.toISOString().split('T')[0];
+    }); 

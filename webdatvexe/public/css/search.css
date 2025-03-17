@@ -1,0 +1,51 @@
+.search-form {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+}
+
+.search-form label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.search-form select,
+.search-form input {
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+}
+
+.search-form select:focus,
+.search-form input:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+}
+
+.search-results {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+}
+
+.table th {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.btn-primary {
+  padding: 0.5rem 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .search-form {
+    padding: 1rem;
+  }
+  
+  .col-md-1 {
+    margin-top: 1rem;
+  }
+} 

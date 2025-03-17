@@ -1,0 +1,117 @@
+extends ../layout
+
+block content
+  .container-fluid.py-4
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h1.h3.mb-0 Chi tiết người dùng
+      .btn-group
+        a.btn.btn-primary(href=`/admin/users/${user.id}/edit`)
+          i.fas.fa-edit.me-2
+          | Sửa thông tin
+        form.d-inline(method='POST' action=`/admin/users/${user.id}/delete` onsubmit='return confirm("Bạn có chắc chắn muốn xóa người dùng này?")')
+          button.btn.btn-danger(type='submit')
+            i.fas.fa-trash.me-2
+            | Xóa người dùng
+        a.btn.btn-secondary(href='/admin/users')
+          i.fas.fa-arrow-left.me-2
+          | Quay lại
+
+    if messages.success
+      .alert.alert-success.alert-dismissible.fade.show(role='alert')
+        = messages.success
+        button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+    
+    if messages.error
+      .alert.alert-danger.alert-dismissible.fade.show(role='alert')
+        = messages.error
+        button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+
+    .row
+      .col-md-4
+        .card.shadow.mb-4
+          .card-header.bg-white
+            h5.card-title.mb-0 Thông tin cá nhân
+          .card-body
+            p.mb-1
+              strong Tên đăng nhập:
+              br
+              | #{user.username}
+            p.mb-1
+              strong Email:
+              br
+              | #{user.email}
+            p.mb-1
+              strong Số điện thoại:
+              br
+              | #{user.phone || 'Chưa cập nhật'}
+            p.mb-1
+              strong Ngày tạo tài khoản:
+              br
+              | #{formatDate(user.created_at)}
+
+        .card.shadow
+          .card-header.bg-white
+            h5.card-title.mb-0 Thống kê đặt vé
+          .card-body
+            .row.text-center
+              .col-6.mb-3
+                h3.mb-0= user.booking_count
+                small.text-muted Tổng số đơn
+              .col-6.mb-3
+                h3.mb-0= formatCurrency(user.total_spent || 0)
+                small.text-muted Tổng chi tiêu
+
+      .col-md-8
+        .card.shadow
+          .card-header.bg-white
+            h5.card-title.mb-0 Lịch sử đặt vé
+          .card-body
+            if bookings.length === 0
+              p.text-center.text-muted.my-4 Chưa có đơn đặt vé nào
+            else
+              .table-responsive
+                table.table.table-hover
+                  thead
+                    tr
+                      th ID
+                      th Tuyến xe
+                      th Thời gian
+                      th Số vé
+                      th Tổng tiền
+                      th Trạng thái
+                      th Thao tác
+                  tbody
+                    each booking in bookings
+                      tr
+                        td= booking.id
+                        td #{booking.from_location} - #{booking.to_location}
+                        td= formatDate(booking.departure_time)
+                        td= booking.number_of_tickets
+                        td= formatCurrency(booking.total_price)
+                        td
+                          span.badge(class=`bg-${booking.status_color}`)= booking.status_name
+                        td
+                          a.btn.btn-sm.btn-info(href=`/admin/bookings/${booking.id}`)
+                            i.fas.fa-eye.me-1
+                            | Chi tiết
+
+block scripts
+  script.
+    function toggleUserStatus(id, newStatus) {
+      const action = newStatus ? 'kích hoạt' : 'vô hiệu hóa';
+      if (confirm(`Bạn có chắc chắn muốn ${action} người dùng này?`)) {
+        fetch(`/admin/users/${id}/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ is_active: newStatus })
+        }).then(response => {
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            alert(`Có lỗi xảy ra khi ${action} người dùng`);
+          }
+        });
+      }
+    } 

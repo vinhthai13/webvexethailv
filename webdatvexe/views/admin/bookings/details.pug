@@ -1,0 +1,144 @@
+extends ../../layout
+
+block content
+  .container-fluid.py-4
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h1.h3.mb-0 Chi tiết đặt vé ##{booking.id}
+      .btn-group
+        form.d-inline(method='POST' action=`/admin/bookings/${booking.id}/delete` onsubmit='return confirm("Bạn có chắc chắn muốn xóa đơn đặt vé này?")')
+          button.btn.btn-danger(type='submit')
+            i.fas.fa-trash.me-2
+            | Xóa đơn
+        a.btn.btn-secondary(href='/admin/bookings')
+          i.fas.fa-arrow-left.me-2
+          | Quay lại
+
+    if messages && messages.success
+      .alert.alert-success.alert-dismissible.fade.show(role='alert')
+        = messages.success
+        button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+    
+    if messages && messages.error
+      .alert.alert-danger.alert-dismissible.fade.show(role='alert')
+        = messages.error
+        button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+
+    .row.mb-3
+      .col-12
+        .card.bg-light
+          .card-body
+            h5.card-title Mã đặt vé
+            h3.text-primary #{booking.booking_code}
+
+    .row
+      .col-md-8
+        .card.shadow.mb-4
+          .card-header.bg-white
+            h5.card-title.mb-0 Thông tin chuyến xe
+          .card-body
+            .row
+              .col-md-6
+                p.mb-1
+                  strong Tuyến xe:
+                  br
+                  | #{booking.from_location || ''} - #{booking.to_location || ''}
+                p.mb-1
+                  strong Thời gian khởi hành:
+                  br
+                  if booking.formatted_time_range
+                    | #{booking.formatted_time_range}
+                  else
+                    | Chưa có thông tin
+                p.mb-1
+                  strong Thời gian di chuyển:
+                  br
+                  if booking.travel_time_formatted
+                    | #{booking.travel_time_formatted}
+                  else
+                    | 1 phút
+              .col-md-6
+                p.mb-1
+                  strong Số vé:
+                  br
+                  | #{booking.seats || 0} vé
+                p.mb-1
+                  strong Giá vé:
+                  br
+                  | #{formatCurrency(booking.total_price / booking.seats)}/vé
+                p.mb-1
+                  strong Tổng tiền:
+                  br
+                  | #{formatCurrency(booking.total_price)}
+
+        .card.shadow
+          .card-header.bg-white
+            h5.card-title.mb-0 Thông tin khách hàng
+          .card-body
+            .row
+              .col-md-6
+                p.mb-1
+                  strong Họ tên:
+                  br
+                  | #{booking.customer_name || ''}
+                p.mb-1
+                  strong Email:
+                  br
+                  | #{booking.customer_email || booking.email || 'Chưa cập nhật'}
+              .col-md-6
+                p.mb-1
+                  strong Số điện thoại:
+                  br
+                  | #{booking.customer_phone || booking.phone || ''}
+                p.mb-1
+                  strong Tài khoản:
+                  br
+                  | #{booking.username || ''}
+
+      .col-md-4
+        .card.shadow
+          .card-header.bg-white
+            h5.card-title.mb-0 Trạng thái đơn
+          .card-body
+            .alert(class=`alert-${booking.status_color}`)
+              h4.alert-heading= booking.status_name
+              p.mb-0 Ngày tạo: #{formatDate(booking.created_at)}
+
+            form(method='POST' action=`/admin/bookings/${booking.id}/status` onsubmit='return confirm("Bạn có chắc chắn muốn cập nhật trạng thái đơn đặt vé này?")')
+              .mb-3
+                label.form-label(for='status_id') Cập nhật trạng thái
+                select.form-select#status_id(name='status_id' required)
+                  each status in statuses
+                    option(
+                      value=status.id
+                      selected=booking.status_id == status.id
+                    )= status.name
+              button.btn.btn-primary.w-100(type='submit')
+                i.fas.fa-save.me-2
+                | Cập nhật trạng thái
+
+block scripts
+  script.
+    function updateBookingStatus(id, statusId) {
+      const statusMap = {
+        2: 'xác nhận',
+        3: 'hủy',
+        4: 'hoàn thành'
+      };
+      const statusText = statusMap[statusId];
+      
+      if (confirm(`Bạn có chắc chắn muốn ${statusText} đơn đặt vé này?`)) {
+        fetch(`/admin/bookings/${id}/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status_id: statusId })
+        }).then(response => {
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            alert(`Có lỗi xảy ra khi ${statusText} đơn đặt vé`);
+          }
+        });
+      }
+    } 

@@ -1,0 +1,17 @@
+extends layouts/user
+
+block content
+  .container.py-5
+    .row.justify-content-center
+      .col-md-6
+        .card.shadow-lg.border-0.text-center.py-4
+          i.fas.fa-exclamation-circle.fa-4x.text-danger.mb-4
+          h1.h3.mb-3= message || "Đã xảy ra lỗi"
+          p.text-muted.mb-4 Xin lỗi vì sự bất tiện này. Vui lòng thử lại hoặc liên hệ với chúng tôi nếu bạn cần trợ giúp.
+          .mt-4
+            a.btn.btn-primary(href='javascript:history.back()')
+              i.fas.fa-arrow-left.me-2
+              | Quay lại
+            a.btn.btn-outline-primary.ms-2(href='/')
+              i.fas.fa-home.me-2
+              | Trang chủ 

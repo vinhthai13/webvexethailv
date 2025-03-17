@@ -1,0 +1,190 @@
+extends ../layout
+
+block content
+  .container-fluid
+    .row
+      // Sidebar
+      include ../partials/admin-sidebar
+      
+      // Main content
+      .col-md-10.p-4
+        .d-flex.justify-content-between.align-items-center.mb-4
+          h2 Quản lý người dùng
+          button.btn.btn-primary(data-bs-toggle="modal" data-bs-target="#addUserModal")
+            i.fas.fa-user-plus.me-2
+            | Thêm người dùng
+
+        .card
+          .card-header
+            .row.align-items-center
+              .col
+                h5.mb-0 Danh sách người dùng
+              .col-auto
+                .input-group
+                  input#searchUser.form-control(type="text" placeholder="Tìm kiếm...")
+                  button.btn.btn-outline-secondary(type="button")
+                    i.fas.fa-search
+          
+          .card-body
+            .table-responsive
+              table.table.table-hover
+                thead
+                  tr
+                    th ID
+                    th Tên đăng nhập
+                    th Họ tên
+                    th Email
+                    th Số điện thoại
+                    th Tổng số vé
+                    th Vé đã xác nhận
+                    th Trạng thái
+                    th Ngày tạo
+                    th Thao tác
+                tbody
+                  each user in users
+                    tr
+                      td= user.id
+                      td= user.username
+                      td= user.full_name
+                      td= user.email
+                      td= user.phone
+                      td= user.total_bookings
+                      td= user.confirmed_bookings
+                      td
+                        select.form-select.user-status(
+                          data-user-id=user.id
+                          class=user.status === 'active' ? 'bg-success' : 'bg-danger'
+                        )
+                          option(
+                            value="active"
+                            selected=user.status === 'active'
+                          ) Hoạt động
+                          option(
+                            value="inactive"
+                            selected=user.status === 'inactive'
+                          ) Vô hiệu
+                      td= formatDate(user.created_at)
+                      td
+                        .btn-group
+                          button.btn.btn-info.btn-sm.me-2(onclick=`editUser(${JSON.stringify(user)})`)
+                            i.fas.fa-edit
+                          button.btn.btn-danger.btn-sm(onclick=`deleteUser(${user.id})`)
+                            i.fas.fa-trash
+
+        // Add User Modal
+        #addUserModal.modal.fade
+          .modal-dialog
+            .modal-content
+              .modal-header
+                h5.modal-title Thêm người dùng mới
+                button.btn-close(data-bs-dismiss="modal")
+              .modal-body
+                form#addUserForm
+                  .mb-3
+                    label.form-label(for="username") Tên đăng nhập
+                    input#username.form-control(type="text" required)
+                  .mb-3
+                    label.form-label(for="password") Mật khẩu
+                    input#password.form-control(type="password" required)
+                  .mb-3
+                    label.form-label(for="email") Email
+                    input#email.form-control(type="email" required)
+                  .mb-3
+                    label.form-label(for="fullName") Họ tên
+                    input#fullName.form-control(type="text" required)
+                  .mb-3
+                    label.form-label(for="phone") Số điện thoại
+                    input#phone.form-control(type="tel" required)
+              .modal-footer
+                button.btn.btn-secondary(data-bs-dismiss="modal") Đóng
+                button.btn.btn-primary(type="submit") Thêm mới
+
+block scripts
+  script.
+    // Cập nhật trạng thái người dùng
+    document.querySelectorAll('.user-status').forEach(select => {
+      select.addEventListener('change', function() {
+        const userId = this.dataset.userId;
+        const status = this.value;
+        
+        fetch(`/admin/users/${userId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            this.className = `form-select user-status ${status === 'active' ? 'bg-success' : 'bg-danger'}`;
+            alert('Cập nhật trạng thái thành công');
+          } else {
+            alert(data.message);
+          }
+        });
+      });
+    });
+
+    // Tìm kiếm người dùng
+    document.getElementById('searchUser').addEventListener('input', function() {
+      const searchText = this.value.toLowerCase();
+      const rows = document.querySelectorAll('tbody tr');
+      
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchText) ? '' : 'none';
+      });
+    });
+
+    // Thêm người dùng
+    document.getElementById('addUserForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = {
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value,
+        email: document.getElementById('email').value,
+        full_name: document.getElementById('fullName').value,
+        phone: document.getElementById('phone').value
+      };
+
+      fetch('/admin/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert('Thêm người dùng thành công');
+          window.location.reload();
+        } else {
+          alert(data.message);
+        }
+      });
+    });
+
+    // Xóa người dùng
+    function deleteUser(id) {
+      if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
+        fetch(`/admin/users/${id}`, {
+          method: 'DELETE'
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert('Xóa người dùng thành công');
+            window.location.reload();
+          } else {
+            alert(data.message);
+          }
+        });
+      }
+    }
+
+    function formatDate(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleDateString('vi-VN');
+    } 

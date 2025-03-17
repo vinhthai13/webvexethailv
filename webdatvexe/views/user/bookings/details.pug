@@ -1,0 +1,68 @@
+extends ../../layouts/user
+
+block content
+  .container.mt-4
+    h2.mb-4 Chi tiết đặt vé ##{booking.id}
+    
+    .alert.alert-info
+      h4.mb-3 Mã đặt vé: 
+        span.badge.bg-primary.fs-4 #{booking.booking_code}
+      p.small Vui lòng lưu lại mã đặt vé để tra cứu thông tin và thanh toán
+
+    .card
+      .card-body
+        .row
+          .col-md-6
+            h5.card-title Thông tin chuyến xe
+            p
+              strong Tuyến xe: 
+              span #{booking.from_location} - #{booking.to_location}
+            p
+              strong Thời gian khởi hành: 
+              span #{booking.departure_time}
+            p
+              strong Số ghế: 
+              span #{booking.seats}
+            p
+              strong Giá vé: 
+              span #{booking.price.toLocaleString('vi-VN')}đ/vé
+            p
+              strong Tổng tiền: 
+              span.fw-bold.text-danger #{booking.total_price.toLocaleString('vi-VN')}đ
+
+          .col-md-6
+            h5.card-title Thông tin khách hàng
+            p
+              strong Họ tên: 
+              span #{booking.customer_name}
+            p
+              strong Số điện thoại: 
+              span #{booking.phone}
+            p
+              strong Email: 
+              span #{booking.email}
+            p
+              strong Ngày đặt: 
+              span #{formatDate(booking.created_at)}
+            p
+              strong Trạng thái: 
+              if booking.status_id == 1
+                span.badge.bg-warning Chờ xác nhận
+              else if booking.status_id == 2
+                span.badge.bg-success Đã xác nhận
+              else if booking.status_id == 3
+                span.badge.bg-danger Đã hủy
+              else
+                span.badge.bg-primary #{booking.status_name}
+
+    .mt-4
+      a.btn.btn-secondary(href="/dat-ve/lich-su")
+        i.fas.fa-arrow-left.me-2
+        | Quay lại lịch sử đặt vé
+
+block scripts
+  script.
+    // Format dates and currency if needed
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add any client-side formatting here if needed
+    }); 

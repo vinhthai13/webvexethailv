@@ -1,0 +1,70 @@
+extends ../../layouts/user
+
+block content
+  .container.mt-4
+    .row.justify-content-center
+      .col-md-6
+        .card.shadow
+          .card-header.bg-primary.text-white.text-center
+            h4.mb-0 Đăng nhập
+
+          .card-body
+            if error
+              .alert.alert-danger.alert-dismissible.fade.show(role='alert')
+                = error
+                button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+
+            form(action="/login" method="POST")
+              .mb-3
+                label.form-label(for="username") Tên đăng nhập
+                input#username.form-control(
+                  type="text"
+                  name="username"
+                  required
+                  placeholder="Nhập tên đăng nhập"
+                )
+
+              .mb-3
+                label.form-label(for="password") Mật khẩu
+                input#password.form-control(
+                  type="password"
+                  name="password"
+                  required
+                  placeholder="Nhập mật khẩu"
+                )
+
+              button.btn.btn-primary.w-100.mb-3(type="submit") Đăng nhập
+
+              .text-center
+                | Chưa có tài khoản? 
+                a(href="/register") Đăng ký ngay
+
+block styles
+  style.
+    .card {
+      border: none;
+      border-radius: 10px;
+    }
+    .card-header {
+      border-radius: 10px 10px 0 0 !important;
+      padding: 1rem;
+    }
+    .form-control {
+      border-radius: 5px;
+      padding: 0.75rem;
+    }
+    .form-control:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    .btn-primary {
+      padding: 0.75rem;
+      font-weight: 500;
+    }
+    .alert {
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .alert.show {
+      display: block;
+    }

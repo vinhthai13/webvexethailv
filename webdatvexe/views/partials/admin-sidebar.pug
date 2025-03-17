@@ -1,0 +1,44 @@
+.col-md-2.bg-dark.min-vh-100.p-0.sidebar-wrapper
+  .sidebar.p-3.sticky-top
+    h5.text-white.mb-4.d-flex.align-items-center
+      i.fas.fa-bus.me-2
+      | Admin Dashboard
+    
+    ul.nav.flex-column.gap-1
+      li.nav-item
+        a.nav-link.rounded.d-flex.align-items-center(href="/admin" class=currentPath === '/admin' ? 'active' : '')
+          i.fas.fa-home.me-3
+          | Tổng quan
+      li.nav-item
+        a.nav-link.rounded.d-flex.align-items-center(href="/admin/bookings" class=currentPath.startsWith('/admin/bookings') ? 'active' : '')
+          i.fas.fa-ticket-alt.me-3
+          | Quản lý vé
+      li.nav-item
+        a.nav-link.rounded.d-flex.align-items-center(href="/admin/users" class=currentPath.startsWith('/admin/users') ? 'active' : '')
+          i.fas.fa-users.me-3
+          | Người dùng
+      li.nav-item
+        a.nav-link.rounded.d-flex.align-items-center(href="/admin/routes" class=currentPath.startsWith('/admin/routes') ? 'active' : '')
+          i.fas.fa-route.me-3
+          | Tuyến xe
+      li.nav-item
+        a.nav-link.rounded.d-flex.align-items-center(href="/admin/schedules" class=currentPath.startsWith('/admin/schedules') ? 'active' : '')
+          i.fas.fa-calendar-alt.me-3
+          | Lịch trình
+      li.nav-item
+        a.nav-link.rounded.d-flex.align-items-center(href="/admin/revenue" class=currentPath.startsWith('/admin/revenue') ? 'active' : '')
+          i.fas.fa-chart-line.me-3
+          | Thống kê doanh thu
+      
+      li.nav-item.mt-4
+        a.nav-link.rounded.text-danger.d-flex.align-items-center(href="/admin/logout")
+          i.fas.fa-sign-out-alt.me-3
+          | Đăng xuất
+
+    style.
+      .sidebar-wrapper { position: sticky; top: 0; height: 100vh; }
+      .sidebar { height: 100%; overflow-y: auto; }
+      .sidebar .nav-link { color: rgba(255, 255, 255, 0.8); padding: 0.75rem 1rem; }
+      .sidebar .nav-link:hover { background-color: rgba(255, 255, 255, 0.1); color: white; }
+      .sidebar .nav-link.active { background-color: var(--bs-primary); color: white; }
+      .sidebar .nav-item { transition: all 0.2s; } 

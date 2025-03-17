@@ -1,0 +1,59 @@
+header
+  nav.navbar.navbar-expand-lg.navbar-dark.bg-primary.py-2
+    .container
+      a.navbar-brand.d-flex.align-items-center.fw-bold(href="/")
+        i.fas.fa-bus.me-2
+        span.fs-4 ĐẶT VÉ XE
+      
+      button.navbar-toggler(type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-expanded="false" aria-label="Mở menu")
+        span.navbar-toggler-icon
+      
+      #navbarNav.collapse.navbar-collapse.justify-content-center
+        ul.navbar-nav
+          li.nav-item.mx-2
+            a.nav-link.d-flex.align-items-center.fw-medium(href="/tuyen-xe" class=currentPath === '/tuyen-xe' ? 'active' : '')
+              i.fas.fa-route.me-2
+              span Tuyến xe
+          li.nav-item.mx-2
+            a.nav-link.d-flex.align-items-center.fw-medium(href="/lich-trinh" class=currentPath === '/lich-trinh' ? 'active' : '')
+              i.fas.fa-calendar-alt.me-2
+              span Lịch trình
+          li.nav-item.mx-2
+            a.nav-link.d-flex.align-items-center.fw-medium(href="/tin-tuc" class=currentPath === '/tin-tuc' ? 'active' : '')
+              i.fas.fa-newspaper.me-2
+              span Tin tức
+          li.nav-item.mx-2
+            a.nav-link.d-flex.align-items-center.fw-medium(href="/lien-he" class=currentPath === '/lien-he' ? 'active' : '')
+              i.fas.fa-headset.me-2
+              span Liên hệ
+
+      ul.navbar-nav.ms-auto
+        if user
+          li.nav-item.dropdown
+            a.nav-link.dropdown-toggle.d-flex.align-items-center(href="#" data-bs-toggle="dropdown" aria-expanded="false")
+              i.fas.fa-user-circle.me-2
+              span #{user.username}
+            ul.dropdown-menu.dropdown-menu-end.shadow-sm.border-0
+              li
+                a.dropdown-item.d-flex.align-items-center(href="/profile")
+                  i.fas.fa-user.me-2.text-primary
+                  span Thông tin cá nhân
+              li
+                a.dropdown-item.d-flex.align-items-center(href="/dat-ve/lich-su")
+                  i.fas.fa-ticket-alt.me-2.text-primary
+                  span Lịch sử đặt vé
+              li
+                hr.dropdown-divider
+              li
+                a.dropdown-item.d-flex.align-items-center(href="/logout")
+                  i.fas.fa-sign-out-alt.me-2.text-danger
+                  span Đăng xuất
+        else
+          li.nav-item.me-2
+            a.nav-link.fw-medium.d-flex.align-items-center(href="/login")
+              i.fas.fa-sign-in-alt.me-1
+              | Đăng nhập
+          li.nav-item
+            a.btn.btn-light.fw-medium(href="/register")
+              i.fas.fa-user-plus.me-1
+              | Đăng ký

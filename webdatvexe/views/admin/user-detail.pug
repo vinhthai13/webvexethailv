@@ -1,0 +1,70 @@
+extends ../layout
+
+block content
+  .container-fluid
+    .row
+      // Sidebar
+      include ../partials/admin-sidebar
+      
+      // Main content
+      .col-md-10.p-4
+        .d-flex.justify-content-between.align-items-center.mb-4
+          h2 Chi tiết người dùng
+          a.btn.btn-secondary(href="/admin/users")
+            i.fas.fa-arrow-left.me-2
+            | Quay lại
+        
+        .row
+          .col-md-4.mb-4
+            .card
+              .card-header
+                h5.mb-0 Thông tin cá nhân
+              .card-body
+                .mb-3
+                  label.form-label Tên đăng nhập
+                  input.form-control(type="text" value=user.username readonly)
+                .mb-3
+                  label.form-label Email
+                  input.form-control(type="email" value=user.email readonly)
+                .mb-3
+                  label.form-label Số điện thoại
+                  input.form-control(type="tel" value=user.phone readonly)
+                .mb-3
+                  label.form-label Ngày tạo tài khoản
+                  input.form-control(
+                    type="text"
+                    value=formatDate(user.created_at)
+                    readonly
+                  )
+          
+          .col-md-8
+            .card
+              .card-header
+                h5.mb-0 Lịch sử đặt vé
+              .card-body
+                .table-responsive
+                  table.table.table-hover
+                    thead
+                      tr
+                        th ID
+                        th Tuyến xe
+                        th Thời gian
+                        th Số ghế
+                        th Tổng tiền
+                        th Trạng thái
+                    tbody
+                      each booking in bookings
+                        tr
+                          td= booking.id
+                          td
+                            .d-flex.flex-column
+                              span #{booking.from_location} - #{booking.to_location}
+                          td
+                            .d-flex.flex-column
+                              span= new Date(booking.departure_time).toLocaleString('vi-VN')
+                              small.text-muted Đặt: #{formatDate(booking.created_at)}
+                          td= booking.seats
+                          td= booking.total_price.toLocaleString('vi-VN') + 'đ'
+                          td
+                            span.badge(style=`background-color: ${booking.status_color}`)
+                              = booking.status_name 

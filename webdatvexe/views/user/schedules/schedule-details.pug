@@ -1,0 +1,59 @@
+extends ../../layouts/user.pug
+
+block content
+  .container.mt-4
+    .card
+      .card-header.bg-primary.text-white
+        h4.mb-0 Chi tiết lịch trình
+
+      .card-body
+        if schedule
+          .row
+            .col-md-6
+              h5.card-title Thông tin tuyến xe
+              if schedule.image
+                .mb-3
+                  img.img-fluid.rounded(src=schedule.image alt=`${schedule.from_location} - ${schedule.to_location}` style="max-height: 200px; width: 100%; object-fit: cover;")
+              table.table
+                tbody
+                  tr
+                    th(scope="row") Điểm đi
+                    td= schedule.from_location
+                  tr  
+                    th(scope="row") Điểm đến
+                    td= schedule.to_location
+                  tr
+                    th(scope="row") Khoảng cách
+                    td= schedule.distance + ' km'
+                  tr
+                    th(scope="row") Thời gian di chuyển
+                    td= schedule.duration
+                  tr
+                    th(scope="row") Giá vé
+                    td= schedule.price.toLocaleString('vi-VN') + ' VNĐ'
+
+            .col-md-6
+              h5.card-title Thông tin chuyến xe
+              table.table
+                tbody
+                  tr
+                    th(scope="row") Ngày khởi hành
+                    td= new Date(schedule.departure_date).toLocaleDateString('vi-VN')
+                  tr
+                    th(scope="row") Giờ khởi hành
+                    td= schedule.departure_time
+                  tr
+                    th(scope="row") Loại xe
+                    td= schedule.bus_type
+                  tr
+                    th(scope="row") Số ghế còn trống
+                    td= schedule.available_seats
+                    
+          .text-center.mt-4
+            a.btn.btn-primary(href=`/dat-ve/schedule/${schedule.id}`) Đặt vé ngay
+            a.btn.btn-secondary.ml-2(href='/lich-trinh') Quay lại
+        else 
+          .alert.alert-warning Không tìm thấy thông tin lịch trình
+
+block scripts
+  script(src='/js/schedule-details.js') 

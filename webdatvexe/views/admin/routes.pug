@@ -1,0 +1,207 @@
+//- extends ../layout
+
+//- block content
+//-   .container-fluid
+//-     .row
+//-       // Sidebar
+//-       include ../partials/admin-sidebar
+      
+//-       // Main content
+//-       .col-md-10.p-4
+//-         .d-flex.justify-content-between.align-items-center.mb-4
+//-           h2 Quản lý tuyến xe
+//-           button.btn.btn-primary(data-bs-toggle="modal" data-bs-target="#addRouteModal")
+//-             i.fas.fa-plus.me-2
+//-             | Thêm tuyến mới
+
+//-         .card
+//-           .card-header
+//-             .row.align-items-center
+//-               .col
+//-                 h5.mb-0 Danh sách tuyến xe
+//-               .col-auto
+//-                 .input-group
+//-                   input#searchRoute.form-control(type="text" placeholder="Tìm kiếm tuyến...")
+//-                   button.btn.btn-outline-secondary(type="button")
+//-                     i.fas.fa-search
+          
+//-           .card-body
+//-             .table-responsive
+//-               table.table.table-hover
+//-                 thead
+//-                   tr
+//-                     th ID
+//-                     th Điểm đi
+//-                     th Điểm đến
+//-                     th Khoảng cách
+//-                     th Thời gian
+//-                     th Số chuyến
+//-                     th Giá thấp nhất
+//-                     th Giá cao nhất
+//-                     th Thao tác
+//-                 tbody
+//-                   each route in routes
+//-                     tr
+//-                       td= route.id
+//-                       td= route.from_location
+//-                       td= route.to_location
+//-                       td #{route.distance} km
+//-                       td= route.duration
+//-                       td= route.schedule_count
+//-                       td= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(route.min_price)
+//-                       td= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(route.max_price)
+//-                       td
+//-                         .btn-group
+//-                           button.btn.btn-sm.btn-info.me-2(onclick=`editRoute(${JSON.stringify(route)})`)
+//-                             i.fas.fa-edit
+//-                           button.btn.btn-sm.btn-danger(onclick=`deleteRoute(${route.id})`)
+//-                             i.fas.fa-trash
+
+//-         // Add Route Modal
+//-         #addRouteModal.modal.fade
+//-           .modal-dialog
+//-             .modal-content
+//-               .modal-header
+//-                 h5.modal-title Thêm tuyến xe mới
+//-                 button.btn-close(data-bs-dismiss="modal")
+//-               .modal-body
+//-                 form#addRouteForm
+//-                   .mb-3
+//-                     label.form-label(for="fromLocation") Điểm đi
+//-                     input#fromLocation.form-control(type="text" required)
+//-                   .mb-3
+//-                     label.form-label(for="toLocation") Điểm đến
+//-                     input#toLocation.form-control(type="text" required)
+//-                   .mb-3
+//-                     label.form-label(for="distance") Khoảng cách (km)
+//-                     input#distance.form-control(type="number" required)
+//-                   .mb-3
+//-                     label.form-label(for="duration") Thời gian di chuyển
+//-                     input#duration.form-control(type="text" required placeholder="VD: 8 giờ")
+//-               .modal-footer
+//-                 button.btn.btn-secondary(data-bs-dismiss="modal") Đóng
+//-                 button.btn.btn-primary(type="submit") Thêm mới
+
+//-         // Edit Route Modal
+//-         #editRouteModal.modal.fade
+//-           .modal-dialog
+//-             .modal-content
+//-               .modal-header
+//-                 h5.modal-title Chỉnh sửa tuyến xe
+//-                 button.btn-close(data-bs-dismiss="modal")
+//-               .modal-body
+//-                 form#editRouteForm
+//-                   input#editRouteId(type="hidden")
+//-                   .mb-3
+//-                     label.form-label(for="editFromLocation") Điểm đi
+//-                     input#editFromLocation.form-control(type="text" required)
+//-                   .mb-3
+//-                     label.form-label(for="editToLocation") Điểm đến
+//-                     input#editToLocation.form-control(type="text" required)
+//-                   .mb-3
+//-                     label.form-label(for="editDistance") Khoảng cách (km)
+//-                     input#editDistance.form-control(type="number" required)
+//-                   .mb-3
+//-                     label.form-label(for="editDuration") Thời gian di chuyển
+//-                     input#editDuration.form-control(type="text" required)
+//-               .modal-footer
+//-                 button.btn.btn-secondary(data-bs-dismiss="modal") Đóng
+//-                 button.btn.btn-primary(type="submit") Lưu thay đổi
+
+//- block scripts
+//-   script.
+//-     // Tìm kiếm tuyến
+//-     document.getElementById('searchRoute').addEventListener('input', function() {
+//-       const searchText = this.value.toLowerCase();
+//-       const rows = document.querySelectorAll('tbody tr');
+      
+//-       rows.forEach(row => {
+//-         const text = row.textContent.toLowerCase();
+//-         row.style.display = text.includes(searchText) ? '' : 'none';
+//-       });
+//-     });
+
+//-     // Thêm tuyến mới
+//-     document.getElementById('addRouteForm').addEventListener('submit', function(e) {
+//-       e.preventDefault();
+//-       const formData = {
+//-         from_location: document.getElementById('fromLocation').value,
+//-         to_location: document.getElementById('toLocation').value,
+//-         distance: document.getElementById('distance').value,
+//-         duration: document.getElementById('duration').value
+//-       };
+
+//-       fetch('/admin/routes', {
+//-         method: 'POST',
+//-         headers: {
+//-           'Content-Type': 'application/json'
+//-         },
+//-         body: JSON.stringify(formData)
+//-       })
+//-       .then(res => res.json())
+//-       .then(data => {
+//-         if (data.success) {
+//-           alert('Thêm tuyến xe thành công');
+//-           window.location.reload();
+//-         } else {
+//-           alert(data.message);
+//-         }
+//-       });
+//-     });
+
+//-     // Chỉnh sửa tuyến
+//-     function editRoute(route) {
+//-       document.getElementById('editRouteId').value = route.id;
+//-       document.getElementById('editFromLocation').value = route.from_location;
+//-       document.getElementById('editToLocation').value = route.to_location;
+//-       document.getElementById('editDistance').value = route.distance;
+//-       document.getElementById('editDuration').value = route.duration;
+      
+//-       new bootstrap.Modal(document.getElementById('editRouteModal')).show();
+//-     }
+
+//-     document.getElementById('editRouteForm').addEventListener('submit', function(e) {
+//-       e.preventDefault();
+//-       const id = document.getElementById('editRouteId').value;
+//-       const formData = {
+//-         from_location: document.getElementById('editFromLocation').value,
+//-         to_location: document.getElementById('editToLocation').value,
+//-         distance: document.getElementById('editDistance').value,
+//-         duration: document.getElementById('editDuration').value
+//-       };
+
+//-       fetch(`/admin/routes/${id}`, {
+//-         method: 'PUT',
+//-         headers: {
+//-           'Content-Type': 'application/json'
+//-         },
+//-         body: JSON.stringify(formData)
+//-       })
+//-       .then(res => res.json())
+//-       .then(data => {
+//-         if (data.success) {
+//-           alert('Cập nhật tuyến xe thành công');
+//-           window.location.reload();
+//-         } else {
+//-           alert(data.message);
+//-         }
+//-       });
+//-     });
+
+//-     // Xóa tuyến
+//-     function deleteRoute(id) {
+//-       if (confirm('Bạn có chắc chắn muốn xóa tuyến xe này?')) {
+//-         fetch(`/admin/routes/${id}`, {
+//-           method: 'DELETE'
+//-         })
+//-         .then(res => res.json())
+//-         .then(data => {
+//-           if (data.success) {
+//-             alert('Xóa tuyến xe thành công');
+//-             window.location.reload();
+//-           } else {
+//-             alert(data.message);
+//-           }
+//-         });
+//-       }
+//-     } 

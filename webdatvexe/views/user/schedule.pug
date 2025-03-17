@@ -1,0 +1,72 @@
+extends ../layouts/user
+
+block content
+  .container.py-5
+    h1.text-center.mb-4 Lịch trình
+
+    .row.mb-4
+      .col-lg-8.mx-auto
+        .card.shadow
+          .card-body
+            form(action="/lich-trinh" method="GET")
+              .row.g-3
+                .col-md-4
+                  label.form-label(for="from") Điểm đi
+                  select#from.form-select(name="from")
+                    option(value="") Tất cả
+                    each location in locations || []
+                      option(value=location selected=query && query.from === location) #{location}
+                
+                .col-md-4
+                  label.form-label(for="to") Điểm đến
+                  select#to.form-select(name="to")
+                    option(value="") Tất cả
+                    each location in locations || []
+                      option(value=location selected=query && query.to === location) #{location}
+                
+                .col-md-4
+                  label.form-label(for="date") Ngày đi
+                  input#date.form-control(type="date" name="date" value=query && query.date)
+                
+                .col-12.mt-3
+                  button.btn.btn-primary.w-100(type="submit")
+                    i.fas.fa-search.me-1
+                    | Tìm chuyến xe
+
+    if schedules && schedules.length > 0
+      .table-responsive
+        table.table.table-hover.align-middle
+          thead.table-light
+            tr
+              th Tuyến xe
+              th Thời gian
+              th Loại xe
+              th Ghế trống
+              th Giá vé
+              th
+          tbody
+            each schedule in schedules
+              tr
+                td
+                  .fw-bold #{schedule.from_location} - #{schedule.to_location}
+                td
+                  div
+                    i.fas.fa-clock.text-primary.me-1
+                    | #{new Date(schedule.date).toLocaleDateString('vi-VN')} #{schedule.departure_time.slice(0,5)}
+                  small.text-muted #{schedule.duration}
+                td
+                  i.fas.fa-bus.text-primary.me-1
+                  | #{schedule.bus_type}
+                td
+                  span.badge.bg-success #{schedule.available_seats}
+                td.text-danger.fw-bold #{schedule.price.toLocaleString('vi-VN')}đ
+                td
+                  a.btn.btn-sm.btn-primary(href=`/dat-ve?schedule=${schedule.id}`)
+                    i.fas.fa-ticket-alt.me-1
+                    | Đặt vé
+    else
+      .text-center.py-5
+        i.fas.fa-calendar-times.fa-3x.text-muted.mb-3
+        p.lead.text-muted Không tìm thấy lịch trình nào phù hợp
+        if query
+          p.text-muted Vui lòng thử tìm kiếm với điều kiện khác 

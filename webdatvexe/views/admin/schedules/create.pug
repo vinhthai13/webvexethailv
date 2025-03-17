@@ -1,0 +1,160 @@
+extends ../layout
+
+block content
+  .container-fluid.py-4
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h1.h3.mb-0
+        i.fas.fa-calendar-plus.me-2
+        | Thêm lịch trình mới
+      a.btn.btn-secondary(href='/admin/schedules')
+        i.fas.fa-arrow-left.me-2
+        | Quay lại
+
+    if messages.error
+      .alert.alert-danger.alert-dismissible.fade.show
+        i.fas.fa-exclamation-circle.me-2
+        = messages.error
+        button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+    
+    if messages.success
+      .alert.alert-success.alert-dismissible.fade.show
+        i.fas.fa-check-circle.me-2
+        = messages.success
+        button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+    
+    .card.shadow
+      .card-header
+        h5.mb-0
+          i.fas.fa-info-circle.me-2
+          | Thông tin lịch trình
+      .card-body
+        form(action='/admin/schedules' method='POST')
+          .row
+            .col-md-6.mb-3
+              label.form-label(for='route_id')
+                i.fas.fa-route.me-1
+                | Tuyến xe
+              select#route_id.form-select(name='route_id' required)
+                option(value='') Chọn tuyến xe
+                each route in routes
+                  option(value=route.id)
+                    | #{route.from_location} - #{route.to_location} (#{route.distance} km)
+            
+            .col-md-6.mb-3
+              label.form-label(for='date')
+                i.fas.fa-calendar-day.me-1
+                | Ngày khởi hành
+              input#date.form-control(type='date' name='date' value=defaultDate required)
+          
+          .row
+            .col-md-6.mb-3
+              label.form-label(for='departure_time')
+                i.fas.fa-clock.me-1
+                | Giờ khởi hành
+              input#departure_time.form-control(type='time' name='departure_time' required)
+            
+            .col-md-6.mb-3
+              label.form-label(for='arrival_time')
+                i.fas.fa-clock.me-1
+                | Giờ đến
+              input#arrival_time.form-control(type='time' name='arrival_time' required)
+          
+          .row
+            .col-md-4.mb-3
+              label.form-label(for='bus_type')
+                i.fas.fa-bus.me-1
+                | Loại xe
+              select#bus_type.form-select(name='bus_type' required)
+                option(value='') Chọn loại xe
+                option(value='Giường nằm') Giường nằm
+                option(value='Ghế ngồi') Ghế ngồi
+                option(value='Limousine') Limousine
+            
+            .col-md-4.mb-3
+              label.form-label(for='price')
+                i.fas.fa-tag.me-1
+                | Giá vé
+              .input-group
+                input#price.form-control(type='number' name='price' min='0' required)
+                span.input-group-text VNĐ
+            
+            .col-md-4.mb-3
+              label.form-label(for='available_seats')
+                i.fas.fa-chair.me-1
+                | Số ghế trống
+              input#available_seats.form-control(type='number' name='available_seats' min='0' required)
+          
+          .d-flex.justify-content-end.mt-4
+            button.btn.btn-secondary.me-2(type='reset')
+              i.fas.fa-undo.me-2
+              | Nhập lại
+            button.btn.btn-primary(type='submit')
+              i.fas.fa-save.me-2
+              | Thêm lịch trình
+
+block scripts
+  script.
+    // Set min date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').min = today;
+    
+    // Auto calculate arrival time based on departure time and route duration
+    document.getElementById('route_id').addEventListener('change', function() {
+      const routeSelect = this;
+      const selectedOption = routeSelect.options[routeSelect.selectedIndex];
+      const routeText = selectedOption.text;
+      
+      // Extract duration from route text if available
+      const durationMatch = routeText.match(/\((\d+) km\)/);
+      if (durationMatch) {
+        const distance = parseInt(durationMatch[1]);
+        // Estimate duration based on distance (assuming 60km/h average speed)
+        const estimatedHours = Math.floor(distance / 60);
+        const estimatedMinutes = Math.round((distance / 60 - estimatedHours) * 60);
+        
+        // Auto-fill price based on distance
+        const estimatedPrice = distance * 1000; // 1000 VND per km
+        document.getElementById('price').value = estimatedPrice;
+        
+        // Set default available seats
+        document.getElementById('available_seats').value = 45;
+        
+        // Auto calculate arrival time when departure time is set
+        document.getElementById('departure_time').addEventListener('input', function() {
+          const departureTime = this.value;
+          if (departureTime) {
+            const [hours, minutes] = departureTime.split(':');
+            let arrivalHours = parseInt(hours) + estimatedHours;
+            let arrivalMinutes = parseInt(minutes) + estimatedMinutes;
+            
+            if (arrivalMinutes >= 60) {
+              arrivalHours += 1;
+              arrivalMinutes -= 60;
+            }
+            
+            if (arrivalHours >= 24) {
+              arrivalHours -= 24;
+            }
+            
+            const formattedArrivalHours = arrivalHours.toString().padStart(2, '0');
+            const formattedArrivalMinutes = arrivalMinutes.toString().padStart(2, '0');
+            
+            document.getElementById('arrival_time').value = `${formattedArrivalHours}:${formattedArrivalMinutes}`;
+          }
+        });
+      }
+    });
+    
+    // Format price with thousand separator
+    document.getElementById('price').addEventListener('input', function() {
+      const value = this.value.replace(/,/g, '');
+      if (value) {
+        this.value = parseInt(value).toLocaleString('vi-VN');
+      }
+    });
+    
+    // Validate form before submit
+    document.querySelector('form').addEventListener('submit', function(e) {
+      const price = document.getElementById('price').value;
+      document.getElementById('price').value = price.replace(/,/g, '');
+    }); 

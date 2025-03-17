@@ -1,0 +1,170 @@
+//- extends layout
+
+//- block content
+//-   .container-fluid
+//-     h1.h3.mb-4 Tổng quan
+    
+//-     .row.mb-4
+//-       .col-md-3.mb-4.mb-md-0
+//-         .card.bg-primary.h-100
+//-           .card-body
+//-             h5.card-title.text-white.mb-3
+//-               i.fas.fa-money-bill-wave.me-2
+//-               | Doanh thu
+//-             h2.display-4.text-white= formatCurrency(totalRevenue)
+            
+//-       .col-md-9
+//-         .card.h-100
+//-           .card-body
+//-             h5.card-title.mb-3
+//-               i.fas.fa-chart-pie.me-2
+//-               | Thống kê đặt vé
+//-             .row.text-center
+//-               .col
+//-                 .h3= formatNumber(bookingStats.total)
+//-                 .text-muted Tổng số
+//-               .col
+//-                 .h3= formatNumber(bookingStats.pending)
+//-                 .text-muted
+//-                   i.fas.fa-clock.me-1.text-warning
+//-                   | Chờ xác nhận
+//-               .col
+//-                 .h3= formatNumber(bookingStats.confirmed)
+//-                 .text-muted
+//-                   i.fas.fa-check.me-1.text-success
+//-                   | Đã xác nhận
+//-               .col
+//-                 .h3= formatNumber(bookingStats.completed)
+//-                 .text-muted
+//-                   i.fas.fa-check-double.me-1.text-info
+//-                   | Hoàn thành
+//-               .col
+//-                 .h3= formatNumber(bookingStats.cancelled)
+//-                 .text-muted
+//-                   i.fas.fa-times.me-1.text-danger
+//-                   | Đã hủy
+    
+//-     .row.mb-4
+//-       .col-md-8
+//-         .card
+//-           .card-header.d-flex.justify-content-between.align-items-center
+//-             h5.mb-0
+//-               i.fas.fa-chart-line.me-2
+//-               | Biểu đồ doanh thu
+//-             select#chartPeriod.form-select.w-auto
+//-               option(value="week") Tuần này
+//-               option(value="month" selected) Tháng này
+//-               option(value="year") Năm nay
+//-           .card-body
+//-             canvas#revenueChart(height="250")
+      
+//-       .col-md-4
+//-         .card
+//-           .card-header
+//-             h5.mb-0
+//-               i.fas.fa-route.me-2
+//-               | Tuyến phổ biến
+//-           .card-body
+//-             ul.list-group.list-group-flush
+//-               each route in popularRoutes
+//-                 li.list-group-item.d-flex.justify-content-between.align-items-center
+//-                   span #{route.from_location} - #{route.to_location}
+//-                   span.badge.bg-primary.rounded-pill= route.booking_count
+    
+//-     .row
+//-       .col-md-12
+//-         .card
+//-           .card-header
+//-             h5.mb-0
+//-               i.fas.fa-ticket-alt.me-2
+//-               | Đơn đặt vé gần đây
+//-           .card-body
+//-             .table-responsive
+//-               table.table.table-hover
+//-                 thead
+//-                   tr
+//-                     th ID
+//-                     th Khách hàng
+//-                     th Tuyến xe
+//-                     th Số vé
+//-                     th Tổng tiền
+//-                     th Trạng thái
+//-                     th Ngày đặt
+//-                     th Thao tác
+//-                 tbody
+//-                   each booking in recentBookings
+//-                     tr
+//-                       td= booking.id
+//-                       td= booking.customer_name
+//-                       td #{booking.from_location} - #{booking.to_location}
+//-                       td= booking.seats
+//-                       td= formatCurrency(booking.total_price)
+//-                       td
+//-                         span(class=`badge bg-${booking.status_color}`)= booking.status_name
+//-                       td= formatDate(booking.created_at)
+//-                       td
+//-                         a.btn.btn-sm.btn-info(href=`/admin/bookings/${booking.id}`)
+//-                           i.fas.fa-eye
+
+//- block scripts
+//-   script(src='https://cdn.jsdelivr.net/npm/chart.js')
+//-   script.
+//-     // Dữ liệu mẫu cho biểu đồ
+//-     const revenueData = {
+//-       labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+//-       datasets: [{
+//-         label: 'Doanh thu',
+//-         data: [1200000, 1900000, 3000000, 5000000, 2000000, 3000000, 1500000],
+//-         backgroundColor: 'rgba(59, 130, 246, 0.2)',
+//-         borderColor: '#3b82f6',
+//-         borderWidth: 2,
+//-         tension: 0.4,
+//-         fill: true
+//-       }]
+//-     };
+
+//-     // Tạo biểu đồ
+//-     const ctx = document.getElementById('revenueChart').getContext('2d');
+//-     const revenueChart = new Chart(ctx, {
+//-       type: 'line',
+//-       data: revenueData,
+//-       options: {
+//-         responsive: true,
+//-         maintainAspectRatio: false,
+//-         scales: {
+//-           y: {
+//-             beginAtZero: true,
+//-             ticks: {
+//-               callback: function(value) {
+//-                 return formatCurrency(value);
+//-               }
+//-             }
+//-           }
+//-         },
+//-         plugins: {
+//-           legend: {
+//-             display: false
+//-           }
+//-         }
+//-       }
+//-     });
+
+//-     // Xử lý thay đổi khoảng thời gian
+//-     document.getElementById('chartPeriod').addEventListener('change', function() {
+//-       // Cập nhật dữ liệu biểu đồ theo khoảng thời gian
+//-       // Đây là dữ liệu mẫu, bạn cần thay thế bằng dữ liệu thực từ API
+//-       if (this.value === 'week') {
+//-         revenueChart.data.labels = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+//-         revenueChart.data.datasets[0].data = [1200000, 1900000, 3000000, 5000000, 2000000, 3000000, 1500000];
+//-       } else if (this.value === 'month') {
+//-         revenueChart.data.labels = ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'];
+//-         revenueChart.data.datasets[0].data = [12000000, 15000000, 10000000, 20000000];
+//-       } else if (this.value === 'year') {
+//-         revenueChart.data.labels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
+//-         revenueChart.data.datasets[0].data = [
+//-           5000000, 7000000, 10000000, 12000000, 15000000, 20000000, 
+//-           25000000, 22000000, 18000000, 15000000, 12000000, 10000000
+//-         ];
+//-       }
+//-       revenueChart.update();
+//-     }); 

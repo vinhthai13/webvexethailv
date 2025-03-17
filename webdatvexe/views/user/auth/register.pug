@@ -1,0 +1,149 @@
+extends ../../layouts/user
+
+block content
+  .container.mt-4
+    .row.justify-content-center
+      .col-md-6
+        .card
+          .card-header.bg-primary.text-white
+            h4.mb-0 Đăng ký tài khoản
+          .card-body
+            form#registerForm
+              .mb-3
+                label.form-label(for="username") Tên đăng nhập
+                input#username.form-control(
+                  type="text"
+                  name="username"
+                  required
+                  minlength="3"
+                )
+
+              .mb-3
+                label.form-label(for="password") Mật khẩu
+                input#password.form-control(
+                  type="password"
+                  name="password"
+                  required
+                  minlength="4"
+                )
+
+              .mb-3
+                label.form-label(for="email") Email
+                input#email.form-control(
+                  type="email"
+                  name="email"
+                  required
+                )
+
+              .mb-3
+                label.form-label(for="phone") Số điện thoại
+                input#phone.form-control(
+                  type="tel"
+                  name="phone"
+                  required
+                  pattern="[0-9]{10}"
+                )
+
+              button.btn.btn-primary.w-100(type="submit") Đăng ký
+
+              .mt-3.text-center
+                | Đã có tài khoản? 
+                a(href="/login") Đăng nhập
+
+    // Modal for success message
+    .modal.fade#successModal(tabindex="-1", role="dialog")
+      .modal-dialog(role="document")
+        .modal-content
+          .modal-header
+            h5.modal-title.text-center Đăng Ký Thành Công
+            button.close(type="button", data-dismiss="modal", aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body.text-center
+            .check-icon(style="font-size: 50px; color: #28a745;")
+              i(class="fas fa-check-circle") 
+            h4 Đăng ký thành công.
+            p Bạn vui lòng truy cập email để kích hoạt tài khoản.
+          .modal-footer.justify-content-center
+            button(type="button", class="btn btn-success", data-dismiss="modal", onclick="window.location.href='/login'") OK
+
+    // Modal for error message
+    .modal.fade#errorModal(tabindex="-1", role="dialog")
+      .modal-dialog(role="document")
+        .modal-content
+          .modal-header
+            h5.modal-title.text-center Lỗi Đăng Ký
+            button.close(type="button", data-dismiss="modal", aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body.text-center
+            .error-icon(style="font-size: 50px; color: #dc3545;")
+              i(class="fas fa-exclamation-circle")
+            h4#errorMessage
+          .modal-footer.justify-content-center
+            button(type="button", class="btn btn-danger", data-dismiss="modal") Đóng
+
+block scripts
+  script.
+    const form = document.getElementById('registerForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      try {
+        const response = await fetch('/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          alert('Đăng ký thành công!');
+          window.location.href = '/login';
+        } else {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        alert('Có lỗi xảy ra khi đăng ký');
+      }
+    });
+
+    function showError(message) {
+      document.getElementById('errorMessage').textContent = message;
+      $('#errorModal').modal('show');
+    }
+
+    // Thêm hàm để toggle hiển thị mật khẩu
+    function togglePassword(inputId) {
+      const input = document.getElementById(inputId);
+      const icon = event.currentTarget.querySelector('i');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    // Thêm hiệu ứng hover cho các input
+    document.querySelectorAll('.form-control').forEach(input => {
+      input.addEventListener('focus', function() {
+        this.parentElement.style.transform = 'translateY(-2px)';
+        this.parentElement.style.transition = 'all 0.3s ease';
+      });
+      
+      input.addEventListener('blur', function() {
+        this.parentElement.style.transform = 'translateY(0)';
+      });
+    });

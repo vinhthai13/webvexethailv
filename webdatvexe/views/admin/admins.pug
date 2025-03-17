@@ -1,0 +1,112 @@
+extends ../layout
+
+block content
+  .container-fluid
+    .row
+      // Sidebar
+      include ../partials/admin-sidebar
+      
+      // Main content
+      .col-md-10.p-4
+        h2.mb-4 Quản lý Admin
+        
+        .card
+          .card-header.d-flex.justify-content-between.align-items-center
+            h5.mb-0 Danh sách Admin
+            button.btn.btn-primary(data-bs-toggle="modal" data-bs-target="#addAdminModal")
+              i.fas.fa-plus.me-2
+              | Thêm Admin mới
+              
+          .card-body
+            .table-responsive
+              table.table.table-hover
+                thead
+                  tr
+                    th ID
+                    th Tên đăng nhập
+                    th Họ tên
+                    th Email
+                    th Số điện thoại
+                    th Quyền
+                    th Trạng thái
+                    th Đăng nhập cuối
+                    th Thao tác
+                tbody
+                  each admin in admins
+                    tr
+                      td= admin.id
+                      td= admin.username
+                      td= admin.full_name
+                      td= admin.email
+                      td= admin.phone
+                      td
+                        span.badge(class=admin.is_super_admin ? 'bg-danger' : 'bg-primary')
+                          = admin.is_super_admin ? 'Super Admin' : 'Admin'
+                      td
+                        span.badge(class=admin.status === 'active' ? 'bg-success' : 'bg-secondary')
+                          = admin.status === 'active' ? 'Hoạt động' : 'Vô hiệu'
+                      td= admin.last_login ? new Date(admin.last_login).toLocaleString('vi-VN') : 'Chưa đăng nhập'
+                      td
+                        button.btn.btn-sm.btn-info.me-2(onclick=`editAdmin(${admin.id})`)
+                          i.fas.fa-edit
+                        button.btn.btn-sm.btn-danger(onclick=`deleteAdmin(${admin.id})`)
+                          i.fas.fa-trash
+
+  // Add Admin Modal
+  #addAdminModal.modal.fade
+    .modal-dialog
+      .modal-content
+        .modal-header
+          h5.modal-title Thêm Admin mới
+          button.btn-close(data-bs-dismiss="modal")
+        .modal-body
+          form#addAdminForm
+            .mb-3
+              label.form-label(for="newUsername") Tên đăng nhập
+              input#newUsername.form-control(type="text" required)
+            .mb-3
+              label.form-label(for="newPassword") Mật khẩu
+              input#newPassword.form-control(type="password" required)
+            .mb-3
+              label.form-label(for="newEmail") Email
+              input#newEmail.form-control(type="email" required)
+            .mb-3
+              label.form-label(for="newFullName") Họ tên
+              input#newFullName.form-control(type="text" required)
+            .mb-3
+              label.form-label(for="newPhone") Số điện thoại
+              input#newPhone.form-control(type="tel")
+            .mb-3
+              .form-check
+                input#newIsSuperAdmin.form-check-input(type="checkbox")
+                label.form-check-label(for="newIsSuperAdmin") Super Admin
+        .modal-footer
+          button.btn.btn-secondary(data-bs-dismiss="modal") Đóng
+          button.btn.btn-primary(type="submit") Thêm
+
+block scripts
+  script.
+    function editAdmin(id) {
+      // Implement edit admin functionality
+    }
+
+    function deleteAdmin(id) {
+      if (confirm('Bạn có chắc chắn muốn xóa admin này?')) {
+        fetch(`/admin/admins/${id}`, {
+          method: 'DELETE'
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            window.location.reload();
+          } else {
+            alert(data.message);
+          }
+        });
+      }
+    }
+
+    document.getElementById('addAdminForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      // Implement add admin functionality
+    }); 

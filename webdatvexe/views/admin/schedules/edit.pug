@@ -1,0 +1,72 @@
+extends ../layout
+
+block content
+  .container-fluid
+    .row
+      .col-12
+        .card
+          .card-header
+            h3.card-title Sửa lịch trình
+            .card-tools
+              a.btn.btn-default(href='/admin/schedules')
+                i.fas.fa-arrow-left
+                |  Quay lại
+          .card-body
+            if messages.error
+              .alert.alert-danger.alert-dismissible
+                button.close(type='button' data-dismiss='alert') ×
+                = messages.error
+            if messages.success
+              .alert.alert-success.alert-dismissible
+                button.close(type='button' data-dismiss='alert') ×
+                = messages.success
+                
+            form(action=`/admin/schedules/${schedule.id}` method='POST')
+              .form-group
+                label(for='route_id') Tuyến xe
+                select#route_id.form-control(name='route_id' required)
+                  option(value='') Chọn tuyến xe
+                  each route in routes
+                    option(value=route.id selected=route.id === schedule.route_id)
+                      | #{route.from_location} - #{route.to_location}
+              
+              .form-group
+                label(for='date') Ngày khởi hành
+                input#date.form-control(type='date' name='date' value=schedule.formatted_date required)
+              
+              .form-row
+                .form-group.col-md-6
+                  label(for='departure_time') Giờ khởi hành
+                  input#departure_time.form-control(type='time' name='departure_time' value=schedule.formatted_departure_time required)
+                
+                .form-group.col-md-6
+                  label(for='arrival_time') Giờ đến
+                  input#arrival_time.form-control(type='time' name='arrival_time' value=schedule.formatted_arrival_time required)
+              
+              .form-group
+                label(for='bus_type') Loại xe
+                select#bus_type.form-control(name='bus_type' required)
+                  option(value='') Chọn loại xe
+                  option(value='Giường nằm' selected=schedule.bus_type === 'Giường nằm') Giường nằm
+                  option(value='Ghế ngồi' selected=schedule.bus_type === 'Ghế ngồi') Ghế ngồi
+                  option(value='Limousine' selected=schedule.bus_type === 'Limousine') Limousine
+              
+              .form-row
+                .form-group.col-md-6
+                  label(for='price') Giá vé
+                  .input-group
+                    input#price.form-control(type='number' name='price' value=schedule.price min='0' required)
+                    .input-group-append
+                      span.input-group-text đ
+                
+                .form-group.col-md-6
+                  label(for='available_seats') Số ghế trống
+                  input#available_seats.form-control(type='number' name='available_seats' value=schedule.available_seats min='0' required)
+              
+              .form-group
+                button.btn.btn-primary(type='submit')
+                  i.fas.fa-save
+                  |  Lưu thay đổi
+                a.btn.btn-default.ml-2(href='/admin/schedules')
+                  i.fas.fa-times
+                  |  Hủy 

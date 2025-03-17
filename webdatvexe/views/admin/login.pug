@@ -1,0 +1,54 @@
+extends ../layout
+
+block content
+  .container.mt-5
+    .row.justify-content-center
+      .col-md-6
+        .card
+          .card-header.bg-primary.text-white
+            h4.mb-0 Đăng nhập Admin
+          .card-body
+            if error
+              .alert.alert-danger= error
+            form(action="/admin/login" method="POST")
+              .mb-3
+                label.form-label(for="username") Tên đăng nhập
+                input.form-control#username(
+                  type="text" 
+                  name="username" 
+                  required
+                )
+              .mb-3
+                label.form-label(for="password") Mật khẩu
+                input.form-control#password(
+                  type="password" 
+                  name="password" 
+                  required
+                )
+              button.btn.btn-primary.w-100(type="submit") Đăng nhập
+
+block scripts
+  script.
+    document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = {
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value
+      };
+
+      fetch('/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = '/admin';
+        } else {
+          alert(data.message);
+        }
+      });
+    }); 

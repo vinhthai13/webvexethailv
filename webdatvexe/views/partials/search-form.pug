@@ -1,0 +1,20 @@
+.search-box.card.shadow-sm.p-3
+  form.row.g-3(action="/tim-ve" method="GET")
+    .col-md-4
+      label.form-label.fw-medium(for="departureLoc") Điể
+    .form-group
+      label Điểm đi
+      select(name="departure")
+        option(value="") Chọn điểm đi
+        option(value="hanoi") Hà Nội
+        option(value="saigon") TP.HCM
+    .form-group
+      label Điểm đến
+      select(name="arrival")
+        option(value="") Chọn điểm đến
+        option(value="danang") Đà Nẵng
+        option(value="nhatrang") Nha Trang
+    .form-group
+      label Ngày đi
+      input(type="date" name="date")
+    button(type="submit") Tìm vé 

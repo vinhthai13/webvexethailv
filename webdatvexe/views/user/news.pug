@@ -1,0 +1,80 @@
+extends ../layouts/user
+
+block head
+  link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css")
+  link(rel="stylesheet", href="/css/news.css")
+
+block content
+  .container.py-5
+    h1.text-center.mb-4
+      i.fas.fa-newspaper.me-2
+      | Tin tức & Sự kiện
+
+    .row.g-4
+      .col-md-4
+        .card.h-100
+          img.card-img-top(src="https://source.unsplash.com/random/800x600?bus" alt="Tin tức xe khách")
+          .card-body
+            span.badge.bg-primary.mb-2
+              i.fas.fa-tag.me-1
+              | Khuyến mãi
+            h5.card-title Ưu đãi đặc biệt cho hành khách thân thiết
+            p.card-text Giảm 20% giá vé cho khách hàng thành viên khi đặt vé trước 7 ngày.
+            .d-flex.justify-content-between.align-items-center
+              small.text-muted
+                i.far.fa-clock.me-1
+                | 2 giờ trước
+              a.btn.btn-outline-primary.btn-sm(href="#") 
+                | Xem thêm 
+                i.fas.fa-arrow-right.ms-1
+
+      .col-md-4
+        .card.h-100
+          img.card-img-top(src="https://source.unsplash.com/random/800x600?travel" alt="Du lịch")
+          .card-body
+            span.badge.bg-success.mb-2
+              i.fas.fa-map-marker-alt.me-1
+              | Du lịch
+            h5.card-title Top 5 điểm đến được yêu thích nhất
+            p.card-text Khám phá những địa điểm du lịch hấp dẫn được nhiều khách hàng lựa chọn.
+            .d-flex.justify-content-between.align-items-center
+              small.text-muted
+                i.far.fa-clock.me-1
+                | 1 ngày trước
+              a.btn.btn-outline-primary.btn-sm(href="#")
+                | Xem thêm 
+                i.fas.fa-arrow-right.ms-1
+
+      .col-md-4
+        .card.h-100
+          img.card-img-top(src="https://source.unsplash.com/random/800x600?safety" alt="An toàn")
+          .card-body
+            span.badge.bg-danger.mb-2
+              i.fas.fa-shield-alt.me-1
+              | An toàn
+            h5.card-title Cam kết an toàn trong mùa dịch
+            p.card-text Các biện pháp phòng dịch và đảm bảo an toàn cho hành khách.
+            .d-flex.justify-content-between.align-items-center
+              small.text-muted
+                i.far.fa-clock.me-1
+                | 3 ngày trước
+              a.btn.btn-outline-primary.btn-sm(href="#")
+                | Xem thêm 
+                i.fas.fa-arrow-right.ms-1
+
+    .row.mt-4
+      .col-12.text-center
+        nav(aria-label='Page navigation')
+          ul.pagination.justify-content-center
+            li.page-item.disabled
+              a.page-link(href='#')
+                i.fas.fa-chevron-left
+            li.page-item.active
+              a.page-link(href='#') 1
+            li.page-item
+              a.page-link(href='#') 2
+            li.page-item
+              a.page-link(href='#') 3
+            li.page-item
+              a.page-link(href='#')
+                i.fas.fa-chevron-right 

@@ -1,0 +1,100 @@
+extends ../layout
+
+block content
+  .container-fluid.py-4
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h1.h3.mb-0
+        i.fas.fa-users.me-2
+        | Quản lý người dùng
+      a.btn.btn-primary(href='/admin/users/create')
+        i.fas.fa-user-plus.me-2
+        | Thêm người dùng
+
+    if messages.success
+      .alert.alert-success.alert-dismissible.fade.show(role='alert')
+        i.fas.fa-check-circle.me-2
+        = messages.success
+        button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+    
+    if messages.error
+      .alert.alert-danger.alert-dismissible.fade.show(role='alert')
+        i.fas.fa-exclamation-circle.me-2
+        = messages.error
+        button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+
+    .card.shadow
+      .card-header.d-flex.justify-content-between.align-items-center
+        h5.mb-0 Danh sách người dùng
+        .input-group(style='width: 300px')
+          input.form-control#searchUser(type='text' placeholder='Tìm kiếm người dùng...')
+          button.btn.btn-outline-secondary(type='button')
+            i.fas.fa-search
+      .card-body
+        .table-responsive
+          table.table.table-hover
+            thead
+              tr
+                th ID
+                th Tên đăng nhập
+                th Email
+                th Số điện thoại
+                th Số đơn đặt
+                th Tổng chi tiêu
+                th Ngày tạo
+                th Thao tác
+            tbody
+              each user in users
+                tr
+                  td= user.id
+                  td
+                    .d-flex.align-items-center
+                      .avatar.me-2
+                        i.fas.fa-user-circle.text-primary.fa-lg
+                      = user.username
+                  td= user.email
+                  td= user.phone || 'Chưa cập nhật'
+                  td
+                    span.badge.bg-primary.rounded-pill= user.booking_count
+                  td= formatCurrency(user.total_spent || 0)
+                  td= formatDate(user.created_at)
+                  td
+                    .btn-group
+                      a.btn.btn-sm.btn-info.me-1(href=`/admin/users/${user.id}` title='Chi tiết')
+                        i.fas.fa-eye
+                      a.btn.btn-sm.btn-primary.me-1(href=`/admin/users/${user.id}/edit` title='Sửa')
+                        i.fas.fa-edit
+                      form.d-inline(method='POST' action=`/admin/users/${user.id}/delete` onsubmit='return confirm("Bạn có chắc chắn muốn xóa người dùng này?")')
+                        button.btn.btn-sm.btn-danger(type='submit' title='Xóa')
+                          i.fas.fa-trash
+
+block scripts
+  script.
+    // Tìm kiếm người dùng
+    document.getElementById('searchUser').addEventListener('input', function() {
+      const searchText = this.value.toLowerCase();
+      const rows = document.querySelectorAll('tbody tr');
+      
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchText) ? '' : 'none';
+      });
+    });
+
+    function toggleUserStatus(id, newStatus) {
+      const action = newStatus ? 'kích hoạt' : 'vô hiệu hóa';
+      if (confirm(`Bạn có chắc chắn muốn ${action} người dùng này?`)) {
+        fetch(`/admin/users/${id}/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ is_active: newStatus })
+        }).then(response => {
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            alert(`Có lỗi xảy ra khi ${action} người dùng`);
+          }
+        });
+      }
+    } 

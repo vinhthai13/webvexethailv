@@ -1,0 +1,251 @@
+extends ../layout
+
+block content
+  h2.mb-4 Tổng quan
+
+ 
+  // Thống kê đặt vé
+  .card.mb-4
+    .card-body
+      h5.mb-4
+        i.fas.fa-chart-pie.me-2
+        | Thống kê đặt vé
+      .d-flex.justify-content-between.text-center
+        .px-3
+          h3.text-primary #{stats.totalBookings}
+          p.mb-0 Tổng số
+        .px-3
+          h3.text-warning #{stats.pendingBookings}
+          p.mb-0
+            i.fas.fa-clock.me-1
+            | Chờ xác nhận
+        .px-3
+          h3.text-success #{stats.confirmedBookings}
+          p.mb-0
+            i.fas.fa-check.me-1
+            | Đã xác nhận
+        .px-3
+          h3.text-info #{stats.completedBookings}
+          p.mb-0
+            i.fas.fa-check-double.me-1
+            | Hoàn thành
+        .px-3
+          h3.text-danger #{stats.cancelledBookings}
+          p.mb-0
+            i.fas.fa-times.me-1
+            | Đã hủy
+
+  // Biểu đồ thống kê
+  .row.mb-4
+    .col-md-8
+      .card
+        .card-header.d-flex.justify-content-between.align-items-center
+          h5.mb-0 Thống kê đặt vé theo tháng
+          select#chartType.form-select.w-auto
+            option(value="bar" selected) Biểu đồ cột
+            option(value="line") Biểu đồ đường
+        .card-body
+          canvas#bookingChart(height="250")
+    
+    .col-md-4
+      .card
+        .card-header
+          h5.mb-0 Tuyến phổ biến
+        .card-body
+          canvas#routeChart(height="250")
+
+  // Biểu đồ doanh thu
+  .card.mb-4
+    .card-header.d-flex.justify-content-between.align-items-center
+      h5.mb-0 Doanh thu theo tháng
+      .d-flex.align-items-center
+        select#revenueChartPeriod.form-select.me-2
+          option(value="6months") 6 tháng gần đây
+          option(value="year" selected) Năm nay
+        a.btn.btn-sm.btn-primary(href="/admin/revenue") Xem chi tiết
+    .card-body
+      canvas#revenueChart(height="250")
+
+  // Đơn đặt vé gần đây
+  .card
+    .card-body
+      h5.mb-4 Đơn đặt vé gần đây
+      .table-responsive
+        table.table
+          thead
+            tr
+              th ID
+              th Khách hàng
+              th Tuyến xe
+              th Số vé
+              th Tổng tiền
+              th Trạng thái
+              th Ngày đặt
+          tbody
+            each booking in recentBookings
+              tr
+                td= booking.id
+                td= booking.customer_name
+                td #{booking.from_location} - #{booking.to_location}
+                td= booking.seats
+                td #{booking.total_price.toLocaleString('vi-VN')}đ
+                td
+                  case booking.status_id
+                    when 1
+                      span.badge.badge-warning Chờ xác nhận
+                    when 2
+                      span.badge.badge-success Đã xác nhận
+                    when 3
+                      span.badge.badge-danger Đã hủy
+                    when 4
+                      span.badge.badge-info Hoàn thành
+                td= formatDate(booking.created_at)
+
+block scripts
+  script(src='https://cdn.jsdelivr.net/npm/chart.js')
+  script.
+    // Dữ liệu thực tế cho biểu đồ đặt vé theo tháng
+    const bookingData = !{stats.bookingChartData};
+
+    // Dữ liệu thực tế cho biểu đồ tuyến phổ biến
+    const routeData = !{stats.routeChartData};
+
+    // Dữ liệu thực tế cho biểu đồ doanh thu
+    const revenueData = !{stats.revenueChartData};
+
+    // Tạo biểu đồ đặt vé
+    const bookingCtx = document.getElementById('bookingChart').getContext('2d');
+    const bookingChart = new Chart(bookingCtx, {
+      type: 'bar',
+      data: bookingData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Số lượng đặt vé'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Tháng'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+          }
+        }
+      }
+    });
+
+    // Tạo biểu đồ tuyến phổ biến
+    const routeCtx = document.getElementById('routeChart').getContext('2d');
+    const routeChart = new Chart(routeCtx, {
+      type: 'doughnut',
+      data: routeData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+          }
+        }
+      }
+    });
+
+    // Tạo biểu đồ doanh thu
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    const revenueChart = new Chart(revenueCtx, {
+      type: 'bar',
+      data: revenueData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return value.toLocaleString('vi-VN') + 'đ';
+              }
+            },
+            title: {
+              display: true,
+              text: 'Doanh thu (VNĐ)'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Tháng'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+
+    // Xử lý thay đổi loại biểu đồ
+    document.getElementById('chartType').addEventListener('change', function() {
+      bookingChart.destroy();
+      const newType = this.value;
+      
+      const newChart = new Chart(bookingCtx, {
+        type: newType,
+        data: bookingData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Số lượng đặt vé'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Tháng'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+            }
+          }
+        }
+      });
+      
+      bookingChart = newChart;
+    });
+
+    // Xử lý thay đổi khoảng thời gian cho biểu đồ doanh thu
+    document.getElementById('revenueChartPeriod').addEventListener('change', function() {
+      // Lấy 6 tháng gần đây từ dữ liệu doanh thu thực tế
+      if (this.value === '6months') {
+        const lastSixMonths = revenueData.labels.slice(-6);
+        const lastSixMonthsData = revenueData.datasets[0].data.slice(-6);
+        
+        revenueChart.data.labels = lastSixMonths;
+        revenueChart.data.datasets[0].data = lastSixMonthsData;
+      } else {
+        // Hiển thị tất cả các tháng
+        revenueChart.data.labels = revenueData.labels;
+        revenueChart.data.datasets[0].data = revenueData.datasets[0].data;
+      }
+      revenueChart.update();
+    }); 

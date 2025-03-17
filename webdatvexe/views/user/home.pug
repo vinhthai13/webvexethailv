@@ -1,0 +1,269 @@
+extends ../layouts/user
+
+block head
+  link(rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css")
+  link(rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css")
+
+block content
+  // Top Banner Slider - Hiển thị ngay dưới header
+  if topBanners && topBanners.length > 0
+    section.banner-section.top-banner-section
+      .top-banner-container
+        .banner-slider.top-banner-slider
+          each banner in topBanners
+            .banner-slide
+              a(href=banner.link target=banner.new_tab ? "_blank" : "_self")
+                img.w-100(src=banner.image_url alt=banner.title)
+                if banner.show_title
+                  .banner-caption
+                    h3= banner.title
+                    if banner.description
+                      p= banner.description
+
+  // Hero Banner - tăng chiều cao và thêm background image
+  .hero-banner.text-white
+    .container.text-center.position-relative(style="z-index: 1;")
+      h1.mb-4.display-4.fw-bold.animate__animated.animate__fadeInDown Đặt vé xe trực tuyến
+      p.lead.mb-5.animate__animated.animate__fadeInUp Dễ dàng - Nhanh chóng - An toàn
+      
+      .card.search-card.mx-auto.shadow-lg(style="max-width: 800px; border-radius: 16px;")
+        .card-body.p-4
+          form.search-form(action="/tim-ve" method="GET")
+            .row.g-3
+              .col-md-4
+                label.form-label.fw-medium(for="departure") Điểm đi
+                select.form-select#departure(name="departure" required)
+                  option(value="") Chọn điểm đi
+                  option(value="hanoi") Hà Nội
+                  option(value="saigon") TP.HCM
+                  option(value="danang") Đà Nẵng
+                  option(value="nhatrang") Nha Trang
+              
+              .col-md-4
+                label.form-label.fw-medium(for="arrival") Điểm đến
+                select.form-select#arrival(name="arrival" required)
+                  option(value="") Chọn điểm đến
+                  option(value="hanoi") Hà Nội
+                  option(value="saigon") TP.HCM
+                  option(value="danang") Đà Nẵng
+                  option(value="nhatrang") Nha Trang
+              
+              .col-md-4
+                label.form-label.fw-medium(for="date") Ngày đi
+                input.form-control#date(
+                  type="date" 
+                  name="date" 
+                  required
+                  min=new Date().toISOString().split('T')[0]
+                )
+            
+            .mt-4
+              button.btn.btn-primary.w-100.py-3(type="submit")
+                i.fas.fa-search.me-2
+                | Tìm chuyến xe
+
+  // Middle Banner - hiển thị sau hero section
+  if middleBanners && middleBanners.length > 0
+    section.banner-section.middle-banner-section.py-5
+      .container
+        h2.text-center.mb-4.fw-bold.section-title Ưu đãi đặc biệt
+        .banner-slider.middle-banner-slider
+          each banner in middleBanners
+            .banner-slide
+              a(href=banner.link target=banner.new_tab ? "_blank" : "_self")
+                img.img-fluid.w-100(src=banner.image_url alt=banner.title)
+                if banner.show_title
+                  .banner-caption
+                    h3= banner.title
+                    if banner.description
+                      p= banner.description
+
+  // Tuyến phổ biến
+  section.py-5.routes-section
+    .container
+      h2.text-center.mb-4.fw-bold.section-title Tuyến phổ biến
+      .row.g-4
+        each route in routes
+          .col-md-4.mb-4
+            .card.h-100.route-card
+              .route-image-wrapper
+                img.card-img-top(
+                  src=route.image || `https://via.placeholder.com/800x400?text=${route.from_location}+-+${route.to_location}`
+                  alt=`${route.from_location} - ${route.to_location}`
+                  onerror=`this.onerror=null; this.src="https://via.placeholder.com/800x400?text=${route.from_location}+-+${route.to_location}"`
+                )
+              .card-body.p-4
+                h5.card-title.mb-4.fw-bold
+                  i.fas.fa-map-marker-alt.text-primary.me-2
+                  | #{route.from_location} - #{route.to_location}
+                
+                .d-flex.justify-content-between.mb-3
+                  span
+                    i.fas.fa-road.text-primary.me-2
+                    | #{route.distance || 0} km
+                  span
+                    i.fas.fa-clock.text-info.me-2
+                    | #{route.duration || 'N/A'}
+                
+                .d-flex.justify-content-between.mb-3
+                  span.text-muted Giá từ:
+                  if route.price
+                    - var formattedPrice = parseInt(route.price).toLocaleString('vi-VN')
+                    span.fw-bold.text-danger #{formattedPrice}đ
+                  else
+                    span.fw-bold.text-danger Liên hệ
+                
+                a.btn.btn-primary.w-100.mt-2(href=`/lich-trinh?from=${route.from_location}&to=${route.to_location}`)
+                  i.fas.fa-ticket-alt.me-2
+                  | Đặt vé
+
+  // Bottom Banner - hiển thị sau phần tuyến phổ biến
+  if bottomBanners && bottomBanners.length > 0
+    section.banner-section.bottom-banner-section.py-5.bg-light
+      .container
+        h2.text-center.mb-4.fw-bold.section-title Khuyến mãi
+        .banner-slider.bottom-banner-slider
+          each banner in bottomBanners
+            .banner-slide
+              a(href=banner.link target=banner.new_tab ? "_blank" : "_self")
+                img.img-fluid.w-100(src=banner.image_url alt=banner.title)
+                if banner.show_title
+                  .banner-caption
+                    h3= banner.title
+                    if banner.description
+                      p= banner.description
+
+  // Features Section
+  section.py-5.features-section
+    .container
+      h2.text-center.mb-5.fw-bold.section-title Tại sao chọn chúng tôi?
+      .row.g-4
+        .col-md-3.col-sm-6
+          .feature-card.text-center.p-4
+            .feature-icon.mb-3
+              i.fas.fa-clock.fa-3x.text-primary
+            h5.fw-bold Tiết kiệm thời gian
+            p.text-muted Đặt vé nhanh chóng, không cần xếp hàng
+        
+        .col-md-3.col-sm-6
+          .feature-card.text-center.p-4
+            .feature-icon.mb-3
+              i.fas.fa-shield-alt.fa-3x.text-primary
+            h5.fw-bold An toàn
+            p.text-muted Thanh toán bảo mật, thông tin được bảo vệ
+        
+        .col-md-3.col-sm-6
+          .feature-card.text-center.p-4
+            .feature-icon.mb-3
+              i.fas.fa-tags.fa-3x.text-primary
+            h5.fw-bold Giá cả hợp lý
+            p.text-muted Giá vé tốt nhất, nhiều ưu đãi
+        
+        .col-md-3.col-sm-6
+          .feature-card.text-center.p-4
+            .feature-icon.mb-3
+              i.fas.fa-headset.fa-3x.text-primary
+            h5.fw-bold Hỗ trợ 24/7
+            p.text-muted Luôn sẵn sàng hỗ trợ khi bạn cần
+
+block scripts
+  script(src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js")
+  script(src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js")
+  script.
+    $(document).ready(function(){
+      // Top Banner Slider - Hero Banner
+      $('.top-banner-slider').slick({
+        dots: true,
+        arrows: false,
+        autoplay: true,
+        autoplaySpeed: 5000,
+        fade: true,
+        speed: 800,
+        cssEase: 'cubic-bezier(0.7, 0, 0.3, 1)',
+        pauseOnHover: false,
+        responsive: [
+          {
+            breakpoint: 768,
+            settings: {
+              arrows: false,
+              dots: true
+            }
+          }
+        ]
+      });
+      
+      // Middle Banner - Feature Content
+      $('.middle-banner-slider').slick({
+        dots: true,
+        arrows: true,
+        autoplay: true,
+        autoplaySpeed: 6000,
+        speed: 500,
+        slidesToShow: 2,
+        slidesToScroll: 1,
+        responsive: [
+          {
+            breakpoint: 992,
+            settings: {
+              slidesToShow: 2,
+            }
+          },
+          {
+            breakpoint: 768,
+            settings: {
+              slidesToShow: 1,
+              arrows: false
+            }
+          }
+        ]
+      });
+      
+      // Bottom Banner - Promotions
+      $('.bottom-banner-slider').slick({
+        dots: true,
+        arrows: true,
+        autoplay: true,
+        autoplaySpeed: 7000,
+        speed: 600,
+        slidesToShow: 3,
+        slidesToScroll: 1,
+        responsive: [
+          {
+            breakpoint: 992,
+            settings: {
+              slidesToShow: 2
+            }
+          },
+          {
+            breakpoint: 768,
+            settings: {
+              slidesToShow: 1,
+              arrows: false
+            }
+          }
+        ]
+      });
+      
+      // Animate on scroll
+      $(window).on('scroll', function() {
+        $('.feature-card, .route-card').each(function() {
+          if (isElementInViewport(this)) {
+            $(this).addClass('animate__animated animate__fadeInUp');
+          }
+        });
+      });
+      
+      // Helper function to check if element is in viewport
+      function isElementInViewport(el) {
+        const rect = el.getBoundingClientRect();
+        return (
+          rect.top >= 0 &&
+          rect.left >= 0 &&
+          rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+          rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+      }
+      
+      // Trigger initial scroll check
+      $(window).trigger('scroll');
+    }); 

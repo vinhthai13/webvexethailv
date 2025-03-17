@@ -1,0 +1,58 @@
+extends ../layouts/user
+
+block content
+  .container.py-4
+    h1.mb-4.text-center Tuyến xe
+    
+    form.mb-4(action='/tuyen-xe', method='GET')
+      .row
+        .col-md-5
+          .form-group
+            label(for='from') Điểm đi
+            select#from.form-control(name='from')
+              option(value='') Chọn điểm đi
+              each location in locations || []
+                option(value=location, selected=query && query.from === location)= location
+        .col-md-5
+          .form-group
+            label(for='to') Điểm đến
+            select#to.form-control(name='to')
+              option(value='') Chọn điểm đến
+              each location in locations || []
+                option(value=location, selected=query && query.to === location)= location
+        .col-md-2.d-flex.align-items-end
+          button.btn.btn-primary.w-100(type='submit')
+            i.fas.fa-search.me-2
+            | Tìm kiếm
+
+    if routes && routes.length > 0
+      .row
+        each route in routes
+          .col-lg-4.col-md-6.mb-4
+            .card.h-100.shadow-sm.hover-shadow
+              img.card-img-top(
+                src=route.image || `https://via.placeholder.com/800x400?text=${route.from_location}+-+${route.to_location}`
+                alt=`${route.from_location} - ${route.to_location}`
+                style='height: 200px; object-fit: cover;'
+                onerror='this.onerror=null; this.src="/images/route-placeholder.jpg"'
+              )
+              .card-body
+                h5.card-title.text-primary
+                  = `${route.from_location} - ${route.to_location}`
+                .d-flex.align-items-center.mb-2
+                  i.fas.fa-clock.text-muted.me-2
+                  span= route.duration ? `${route.duration} giờ` : 'N/A'
+                .d-flex.align-items-center.mb-2
+                  i.fas.fa-bus.text-muted.me-2
+                  span= `${route.trip_count} chuyến/ngày`
+                .d-flex.align-items-center.mb-3
+                  i.fas.fa-tag.text-muted.me-2
+                  span.text-danger.fw-bold= `${route.min_price.toLocaleString('vi-VN')}đ`
+                a.btn.btn-outline-primary.w-100(href=`/lich-trinh?from=${route.from_location}&to=${route.to_location}`)
+                  i.fas.fa-calendar-alt.me-2
+                  | Xem lịch trình
+    else
+      .text-center.py-5
+        i.fas.fa-route.fa-3x.text-muted.mb-3
+        h4.text-muted Không tìm thấy tuyến xe nào
+        p.text-muted Vui lòng thử tìm kiếm với điểm đi/đến khác 

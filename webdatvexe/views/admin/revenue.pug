@@ -1,0 +1,175 @@
+extends ../layouts/admin
+
+block append head
+  style.
+    .card {
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .table th {
+      font-weight: 600;
+    }
+    .bg-light {
+      background-color: #f8f9fa;
+    }
+
+block content
+  h2.mb-4 Thống kê doanh thu
+
+  .row.mb-4
+    .col-md-3
+      .card.bg-primary.text-white
+        .card-body
+          h5.card-title Tổng số đơn
+          h2.display-4= formatNumber(totals.total_bookings)
+    .col-md-3
+      .card.bg-success.text-white
+        .card-body
+          h5.card-title Đơn đã xác nhận
+          h2.display-4= formatNumber(totals.confirmed_bookings)
+    .col-md-3
+      .card.bg-danger.text-white
+        .card-body
+          h5.card-title Đơn đã hủy
+          h2.display-4= formatNumber(totals.cancelled_bookings)
+    .col-md-3
+      .card.bg-info.text-white
+        .card-body
+          h5.card-title Doanh thu xác nhận
+          h2.display-4= formatCurrency(totals.total_revenue)
+
+  .row.mb-4
+    .col-12
+      .card
+        .card-header.d-flex.justify-content-between.align-items-center
+          h5.mb-0 Biểu đồ doanh thu theo tháng
+          select#chartType.form-select.w-auto
+            option(value="bar") Biểu đồ cột
+            option(value="line") Biểu đồ đường
+        .card-body
+          canvas#revenueChart
+
+  .row.mb-4
+    .col-12
+      .card
+        .card-header
+          h5.mb-0 Chi tiết theo tháng
+        .card-body
+          .table-responsive
+            table.table.table-hover
+              thead.bg-light
+                tr
+                  th Tháng
+                  th.text-end Tổng đơn
+                  th.text-end Đã xác nhận
+                  th.text-end Đã hủy
+                  th.text-end Số ghế
+                  th.text-end Doanh thu
+              tbody
+                each stat in stats
+                  tr
+                    td= stat.month
+                    td.text-end= formatNumber(stat.total_bookings)
+                    td.text-end= formatNumber(stat.confirmed_bookings)
+                    td.text-end= formatNumber(stat.cancelled_bookings)
+                    td.text-end= formatNumber(stat.total_seats)
+                    td.text-end= formatCurrency(stat.confirmed_revenue)
+
+  .row
+    .col-12
+      .card
+        .card-header
+          h5.mb-0 Thống kê theo tuyến xe
+        .card-body
+          canvas#routeChart
+
+block append scripts
+  script(src='https://cdn.jsdelivr.net/npm/chart.js')
+  script.
+    // Dữ liệu cho biểu đồ
+    const stats = !{JSON.stringify(stats)};
+    const routeStats = !{JSON.stringify(routeStats)};
+    
+    // Biểu đồ doanh thu
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    const routeCtx = document.getElementById('routeChart').getContext('2d');
+    let revenueChart;
+    
+    function createRevenueChart(type = 'bar') {
+      if (revenueChart) {
+        revenueChart.destroy();
+      }
+
+      revenueChart = new Chart(revenueCtx, {
+        type: type,
+        data: {
+          labels: stats.map(s => s.month).reverse(),
+          datasets: [
+            {
+              label: 'Doanh thu xác nhận',
+              data: stats.map(s => s.confirmed_revenue).reverse(),
+              backgroundColor: 'rgba(40, 167, 69, 0.5)',
+              borderColor: 'rgb(40, 167, 69)',
+              borderWidth: 1
+            },
+            {
+              label: 'Doanh thu hoàn thành',
+              data: stats.map(s => s.completed_revenue).reverse(),
+              backgroundColor: 'rgba(23, 162, 184, 0.5)',
+              borderColor: 'rgb(23, 162, 184)',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                    maximumFractionDigits: 0
+                  }).format(value);
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Biểu đồ tuyến xe
+    new Chart(routeCtx, {
+      type: 'bar',
+      data: {
+        labels: routeStats.map(r => `${r.from_location} - ${r.to_location}`),
+        datasets: [{
+          label: 'Số lượng đặt vé',
+          data: routeStats.map(r => r.booking_count),
+          backgroundColor: 'rgba(0, 123, 255, 0.5)',
+          borderColor: 'rgb(0, 123, 255)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1
+            }
+          }
+        }
+      }
+    });
+
+    // Xử lý sự kiện thay đổi loại biểu đồ
+    document.getElementById('chartType').addEventListener('change', function(e) {
+      createRevenueChart(e.target.value);
+    });
+
+    // Khởi tạo biểu đồ ban đầu
+    createRevenueChart('bar'); 

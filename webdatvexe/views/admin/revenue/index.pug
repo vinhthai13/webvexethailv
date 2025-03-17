@@ -1,0 +1,344 @@
+extends ../layout
+
+block content
+  .container-fluid.mt-4
+    .row
+      .col-md-12
+        .card.shadow-sm.mb-4
+          .card-header.d-flex.justify-content-between.align-items-center
+            h5.m-0.font-weight-bold.text-primary Thống kê doanh thu
+            .dropdown
+              button.btn.btn-sm.btn-primary.dropdown-toggle(type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+                | Xuất báo cáo
+              .dropdown-menu.dropdown-menu-right(aria-labelledby="dropdownMenuButton")
+                a.dropdown-item(href="#") Excel
+                a.dropdown-item(href="#") PDF
+                a.dropdown-item(href="#") CSV
+          .card-body
+            .row.mb-4
+              .col-xl-3.col-md-6.mb-4
+                .card.border-left-primary.shadow.h-100.py-2
+                  .card-body
+                    .row.no-gutters.align-items-center
+                      .col.mr-2
+                        .text-xs.font-weight-bold.text-primary.text-uppercase.mb-1 Tổng doanh thu
+                        .h5.mb-0.font-weight-bold.text-gray-800= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalRevenue || 0)
+                      .col-auto
+                        i.fas.fa-dollar-sign.fa-2x.text-gray-300
+              
+              .col-xl-3.col-md-6.mb-4
+                .card.border-left-success.shadow.h-100.py-2
+                  .card-body
+                    .row.no-gutters.align-items-center
+                      .col.mr-2
+                        .text-xs.font-weight-bold.text-success.text-uppercase.mb-1 Trung bình tháng
+                        .h5.mb-0.font-weight-bold.text-gray-800
+                          - const avgMonthlyRevenue = monthlyRevenue.length > 0 ? totalRevenue / monthlyRevenue.length : 0
+                          = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(avgMonthlyRevenue)
+                      .col-auto
+                        i.fas.fa-calendar.fa-2x.text-gray-300
+              
+              .col-xl-3.col-md-6.mb-4
+                .card.border-left-info.shadow.h-100.py-2
+                  .card-body
+                    .row.no-gutters.align-items-center
+                      .col.mr-2
+                        .text-xs.font-weight-bold.text-info.text-uppercase.mb-1 Đặt vé thành công
+                        .h5.mb-0.font-weight-bold.text-gray-800
+                          - const totalBookings = monthlyRevenue.reduce((sum, item) => sum + item.booking_count, 0)
+                          = totalBookings
+                      .col-auto
+                        i.fas.fa-clipboard-list.fa-2x.text-gray-300
+              
+              .col-xl-3.col-md-6.mb-4
+                .card.border-left-warning.shadow.h-100.py-2
+                  .card-body
+                    .row.no-gutters.align-items-center
+                      .col.mr-2
+                        .text-xs.font-weight-bold.text-warning.text-uppercase.mb-1 Trung bình / vé
+                        .h5.mb-0.font-weight-bold.text-gray-800
+                          - const avgPerTicket = totalBookings > 0 ? totalRevenue / totalBookings : 0
+                          = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(avgPerTicket)
+                      .col-auto
+                        i.fas.fa-ticket-alt.fa-2x.text-gray-300
+
+            .row
+              .col-xl-8.col-lg-7
+                .card.shadow.mb-4
+                  .card-header.py-3.d-flex.flex-row.align-items-center.justify-content-between
+                    h6.m-0.font-weight-bold.text-primary Doanh thu theo tháng
+                    .dropdown
+                      button.btn.btn-sm.btn-outline-primary.dropdown-toggle#chartTypeDropdown(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+                        | Biểu đồ cột
+                      .dropdown-menu.dropdown-menu-right(aria-labelledby="chartTypeDropdown")
+                        a.dropdown-item.chart-type(href="#" data-type="bar") Biểu đồ cột
+                        a.dropdown-item.chart-type(href="#" data-type="line") Biểu đồ đường
+                  .card-body
+                    .chart-area
+                      canvas#monthlyRevenueChart
+
+              .col-xl-4.col-lg-5
+                .card.shadow.mb-4
+                  .card-header.py-3.d-flex.flex-row.align-items-center.justify-content-between
+                    h6.m-0.font-weight-bold.text-primary Doanh thu theo tuyến
+                  .card-body
+                    .chart-pie.pt-4.pb-2
+                      canvas#routeRevenueChart
+                    .mt-4.text-center.small
+                      each route, index in routeRevenue.slice(0, 5)
+                        span.mr-2
+                          i.fas.fa-circle(style=`color: hsl(${index * 70}, 70%, 50%)`)
+                          |  #{route.from_location} - #{route.to_location}
+                        
+            .row
+              .col-lg-6.mb-4
+                .card.shadow.mb-4
+                  .card-header.py-3
+                    h6.m-0.font-weight-bold.text-primary Doanh thu 7 ngày gần đây
+                  .card-body
+                    .chart-bar
+                      canvas#dailyRevenueChart
+                
+              .col-lg-6.mb-4
+                .card.shadow.mb-4
+                  .card-header.py-3.d-flex.flex-row.align-items-center.justify-content-between
+                    h6.m-0.font-weight-bold.text-primary Tuyến đường có doanh thu cao nhất
+                  .card-body
+                    .table-responsive
+                      table.table.table-sm
+                        thead
+                          tr
+                            th Tuyến
+                            th.text-center Lượt đặt
+                            th.text-right Doanh thu
+                        tbody
+                          each route in routeRevenue.slice(0, 5)
+                            tr
+                              td #{route.from_location} - #{route.to_location}
+                              td.text-center #{route.booking_count}
+                              td.text-right= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(route.revenue)
+                
+            .row
+              .col-12
+                .card.shadow.mb-4
+                  .card-header.py-3
+                    h6.m-0.font-weight-bold.text-primary Giao dịch gần đây
+                  .card-body
+                    .table-responsive
+                      table.table.table-hover.table-striped
+                        thead
+                          tr
+                            th ID
+                            th Khách hàng
+                            th Tuyến
+                            th Số ghế
+                            th.text-right Tổng tiền
+                            th.text-center Trạng thái
+                            th.text-center Ngày đặt
+                        tbody
+                          each transaction in recentTransactions
+                            tr
+                              td #{transaction.id}
+                              td #{transaction.customer_name}
+                              td #{transaction.from_location} - #{transaction.to_location}
+                              td #{transaction.seats}
+                              td.text-right= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(transaction.total_price)
+                              td.text-center
+                                span.badge(class=transaction.status === 'Confirmed' ? 'badge-success' : 'badge-primary')= transaction.status
+                              td.text-center #{transaction.created_at}
+
+block scripts
+  script(src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js")
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+      // Dữ liệu cho biểu đồ doanh thu theo tháng
+      const monthlyRevenueData = !{JSON.stringify(monthlyRevenue)};
+      const months = monthlyRevenueData.map(item => item.month);
+      const revenues = monthlyRevenueData.map(item => item.revenue);
+      const bookingCounts = monthlyRevenueData.map(item => item.booking_count);
+      
+      // Biểu đồ doanh thu theo tháng
+      const monthlyCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
+      let monthlyChart = new Chart(monthlyCtx, {
+        type: 'bar',
+        data: {
+          labels: months,
+          datasets: [{
+            label: 'Doanh thu (VNĐ)',
+            backgroundColor: 'rgba(78, 115, 223, 0.8)',
+            borderColor: 'rgba(78, 115, 223, 1)',
+            borderWidth: 1,
+            data: revenues,
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          layout: {
+            padding: {
+              left: 10,
+              right: 25,
+              top: 25,
+              bottom: 0
+            }
+          },
+          scales: {
+            xAxes: [{
+              gridLines: {
+                display: false,
+                drawBorder: false
+              }
+            }],
+            yAxes: [{
+              ticks: {
+                beginAtZero: true,
+                callback: function(value) {
+                  return new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                    maximumFractionDigits: 0
+                  }).format(value);
+                }
+              }
+            }]
+          },
+          tooltips: {
+            callbacks: {
+              label: function(tooltipItem, data) {
+                return new Intl.NumberFormat('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND'
+                }).format(tooltipItem.yLabel);
+              }
+            }
+          }
+        }
+      });
+      
+      // Biểu đồ doanh thu theo tuyến đường
+      const routeRevenueData = !{JSON.stringify(routeRevenue.slice(0, 5))};
+      const routeLabels = routeRevenueData.map(item => `${item.from_location} - ${item.to_location}`);
+      const routeRevenues = routeRevenueData.map(item => item.revenue);
+      const backgroundColors = routeLabels.map((_, index) => `hsl(${index * 70}, 70%, 50%)`);
+      
+      const routeCtx = document.getElementById('routeRevenueChart').getContext('2d');
+      let routeChart = new Chart(routeCtx, {
+        type: 'doughnut',
+        data: {
+          labels: routeLabels,
+          datasets: [{
+            data: routeRevenues,
+            backgroundColor: backgroundColors,
+            hoverBackgroundColor: backgroundColors.map(color => color.replace('50%', '60%')),
+            hoverBorderColor: "rgba(234, 236, 244, 1)",
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          tooltips: {
+            callbacks: {
+              label: function(tooltipItem, data) {
+                const value = data.datasets[0].data[tooltipItem.index];
+                return `${data.labels[tooltipItem.index]}: ${new Intl.NumberFormat('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND'
+                }).format(value)}`;
+              }
+            }
+          },
+          legend: {
+            display: false
+          },
+          cutoutPercentage: 70,
+        }
+      });
+      
+      // Biểu đồ doanh thu theo ngày
+      const dailyRevenueData = !{JSON.stringify(dailyRevenue)};
+      const days = dailyRevenueData.map(item => item.date);
+      const dailyRevenues = dailyRevenueData.map(item => item.revenue);
+      
+      const dailyCtx = document.getElementById('dailyRevenueChart').getContext('2d');
+      let dailyChart = new Chart(dailyCtx, {
+        type: 'bar',
+        data: {
+          labels: days,
+          datasets: [{
+            label: 'Doanh thu (VNĐ)',
+            backgroundColor: 'rgba(28, 200, 138, 0.8)',
+            borderColor: 'rgba(28, 200, 138, 1)',
+            borderWidth: 1,
+            data: dailyRevenues,
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          layout: {
+            padding: {
+              left: 10,
+              right: 25,
+              top: 25,
+              bottom: 0
+            }
+          },
+          scales: {
+            xAxes: [{
+              gridLines: {
+                display: false,
+                drawBorder: false
+              }
+            }],
+            yAxes: [{
+              ticks: {
+                beginAtZero: true,
+                callback: function(value) {
+                  return new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                    maximumFractionDigits: 0
+                  }).format(value);
+                }
+              }
+            }]
+          },
+          tooltips: {
+            callbacks: {
+              label: function(tooltipItem, data) {
+                return new Intl.NumberFormat('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND'
+                }).format(tooltipItem.yLabel);
+              }
+            }
+          }
+        }
+      });
+      
+      // Xử lý chuyển đổi loại biểu đồ
+      document.querySelectorAll('.chart-type').forEach(item => {
+        item.addEventListener('click', e => {
+          e.preventDefault();
+          const chartType = e.target.getAttribute('data-type');
+          document.getElementById('chartTypeDropdown').textContent = 
+            chartType === 'bar' ? 'Biểu đồ cột' : 'Biểu đồ đường';
+          
+          // Cập nhật loại biểu đồ
+          monthlyChart.destroy();
+          monthlyChart = new Chart(monthlyCtx, {
+            type: chartType,
+            data: {
+              labels: months,
+              datasets: [{
+                label: 'Doanh thu (VNĐ)',
+                backgroundColor: chartType === 'bar' ? 'rgba(78, 115, 223, 0.8)' : 'rgba(78, 115, 223, 0.05)',
+                borderColor: 'rgba(78, 115, 223, 1)',
+                borderWidth: 1,
+                pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                data: revenues,
+                fill: chartType === 'line'
+              }]
+            },
+            options: monthlyChart.options
+          });
+        });
+      });
+    }); 

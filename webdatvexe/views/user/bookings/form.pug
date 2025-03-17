@@ -1,0 +1,117 @@
+extends ../../layouts/user
+
+block content
+  .container.mt-4
+    h2.mb-4 Đặt vé xe
+    if schedule
+      .alert.alert-info
+        .row
+          .col-md-6
+            p 
+              strong Tuyến xe: 
+              span #{schedule.from_location} - #{schedule.to_location}
+            p 
+              strong Thời gian khởi hành: 
+              span #{schedule.departure_time}
+          .col-md-6
+            p 
+              strong Giá vé: 
+              span.ticket-price #{schedule.price.toLocaleString('vi-VN')}đ
+            p 
+              strong Số ghế trống: 
+              span #{schedule.available_seats}
+
+      form#bookingForm.mt-4
+        input(type="hidden" name="schedule_id" value=schedule.id)
+        input(type="hidden" name="price" value=schedule.price)
+        
+        .form-group.mb-3
+          label(for="customer_name") Họ tên
+          input#customer_name.form-control(
+            type="text" 
+            name="customer_name"
+            required
+          )
+
+        .form-group.mb-3
+          label(for="phone") Số điện thoại
+          input#phone.form-control(
+            type="tel"
+            name="phone"
+            required
+          )
+
+        .form-group.mb-3
+          label(for="email") Email
+          input#email.form-control(
+            type="email"
+            name="email"
+            required
+          )
+
+        .form-group.mb-3
+          label(for="seats") Số lượng vé
+          input#seats.form-control(
+            type="number"
+            name="seats"
+            min="1"
+            max=schedule.available_seats
+            required
+          )
+
+        .alert.alert-info.mt-3
+          p
+            strong Tổng tiền: 
+            span#totalPrice 0đ
+
+        button.btn.btn-primary.mt-3(type="submit") Xác nhận đặt vé
+
+    else
+      .alert.alert-danger Không tìm thấy lịch trình
+
+block scripts
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('bookingForm');
+      const seatsInput = document.getElementById('seats');
+      const totalPriceElement = document.getElementById('totalPrice');
+      const price = #{schedule ? schedule.price : 0};
+
+      seatsInput.addEventListener('input', function() {
+        const seats = parseInt(this.value) || 0;
+        const total = seats * price;
+        totalPriceElement.textContent = total.toLocaleString('vi-VN') + 'đ';
+      });
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        try {
+          const response = await fetch('/dat-ve', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              schedule_id: #{schedule ? schedule.id : 0},
+              customer_name: document.getElementById('customer_name').value,
+              phone: document.getElementById('phone').value,
+              email: document.getElementById('email').value,
+              seats: parseInt(document.getElementById('seats').value)
+            })
+          });
+
+          const data = await response.json();
+          
+          if (data.success) {
+            alert('Đặt vé thành công!');
+            window.location.href = `/dat-ve/chi-tiet/${data.bookingId}`;
+          } else {
+            alert(data.message || 'Có lỗi xảy ra');
+          }
+        } catch (err) {
+          console.error('Error:', err);
+          alert('Có lỗi xảy ra khi đặt vé');
+        }
+      });
+    }); 

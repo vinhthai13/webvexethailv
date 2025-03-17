@@ -1,0 +1,185 @@
+extends ../layout
+
+block content
+  .container-fluid.py-4
+    .row.justify-content-center
+      .col-md-8
+        .card.shadow
+          .card-header.bg-white
+            h5.mb-0
+              i.fas.fa-route.me-2
+              | #{route.id ? 'Chỉnh sửa tuyến xe' : 'Thêm tuyến xe mới'}
+          
+          .card-body
+            if messages.error
+              .alert.alert-danger.alert-dismissible.fade.show(role='alert')
+                = messages.error
+                button.btn-close(type='button' data-bs-dismiss='alert' aria-label='Close')
+
+            form(method='POST' action=route.id ? `/admin/routes/${route.id}` : '/admin/routes')
+              .row
+                .col-md-6.mb-3
+                  label.form-label(for='from_location') 
+                    i.fas.fa-map-marker-alt.me-1
+                    | Điểm đi
+                  input.form-control#from_location(
+                    type='text'
+                    name='from_location'
+                    required
+                    value=route.from_location || ''
+                    placeholder='Nhập điểm đi'
+                  )
+
+                .col-md-6.mb-3
+                  label.form-label(for='to_location')
+                    i.fas.fa-map-marker.me-1
+                    | Điểm đến
+                  input.form-control#to_location(
+                    type='text'
+                    name='to_location'
+                    required
+                    value=route.to_location || ''
+                    placeholder='Nhập điểm đến'
+                  )
+
+              .row
+                .col-md-6.mb-3
+                  label.form-label(for='distance')
+                    i.fas.fa-road.me-1
+                    | Khoảng cách (km)
+                  input.form-control#distance(
+                    type='number'
+                    name='distance'
+                    required
+                    min='0'
+                    step='1'
+                    value=route.distance || 0
+                  )
+
+                .col-md-6.mb-3
+                  label.form-label(for='duration')
+                    i.fas.fa-clock.me-1
+                    | Thời gian di chuyển
+                  input.form-control#duration(
+                    type='text'
+                    name='duration'
+                    required
+                    value=route.duration || ''
+                    placeholder='VD: 8 giờ, 30 phút'
+                  )
+
+              .row
+                .col-md-6.mb-3
+                  label.form-label(for='price')
+                    i.fas.fa-tag.me-1
+                    | Giá vé (VNĐ)
+                  input.form-control#price(
+                    type='number'
+                    name='price'
+                    required
+                    min='0'
+                    step='1000'
+                    value=route.price || 0
+                  )
+
+                .col-md-6.mb-3
+                  label.form-label(for='description')
+                    i.fas.fa-info-circle.me-1
+                    | Mô tả
+                  textarea.form-control#description(
+                    name='description'
+                    rows='3'
+                    placeholder='Nhập mô tả tuyến xe'
+                  )= route.description || ''
+
+              .row
+                .col-12.mb-3
+                  label.form-label(for='image_url')
+                    i.fas.fa-image.me-1
+                    | Link hình ảnh
+                  input.form-control#image_url(
+                    type='url'
+                    name='image_url'
+                    value=route.image || ''
+                    placeholder='Nhập đường dẫn URL của hình ảnh'
+                  )
+                  .form-text Nhập link đến hình ảnh trực tuyến (ví dụ: https://example.com/image.jpg)
+                  if route.image
+                    .mt-2
+                      p.mb-1 Hình ảnh hiện tại:
+                      img.img-thumbnail(src=route.image alt=`${route.from_location} - ${route.to_location}` style='max-height: 150px;')
+
+              .d-flex.gap-2.mt-4
+                button.btn.btn-primary(type='submit')
+                  i.fas.fa-save.me-2
+                  | #{route.id ? 'Cập nhật' : 'Thêm mới'}
+                a.btn.btn-secondary(href='/admin/routes')
+                  i.fas.fa-times.me-2
+                  | Hủy
+
+block scripts
+  script.
+    // Xử lý form submit
+    document.querySelector('form').addEventListener('submit', function(e) {
+      const distance = document.getElementById('distance').value;
+      const price = document.getElementById('price').value;
+      
+      // Chuyển đổi sang số trước khi submit
+      document.getElementById('distance').value = parseInt(distance) || 0;
+      document.getElementById('price').value = parseFloat(price) || 0;
+    });
+
+    // Format giá tiền khi nhập
+    document.getElementById('price').addEventListener('input', function(e) {
+      let value = this.value.replace(/[^0-9]/g, '');
+      if (value) {
+        value = parseInt(value);
+        if (!isNaN(value)) {
+          this.value = value;
+        }
+      }
+    });
+
+    // Validate khoảng cách
+    document.getElementById('distance').addEventListener('input', function(e) {
+      let value = this.value.replace(/[^0-9]/g, '');
+      if (value) {
+        value = parseInt(value);
+        if (!isNaN(value)) {
+          this.value = value;
+        }
+      }
+    });
+
+    // Validate URL hình ảnh
+    document.getElementById('image_url').addEventListener('input', function(e) {
+      const imageUrlPreview = document.getElementById('image-url-preview');
+      if (imageUrlPreview) {
+        if (this.value && this.validity.valid) {
+          imageUrlPreview.src = this.value;
+          imageUrlPreview.style.display = 'block';
+        } else {
+          imageUrlPreview.style.display = 'none';
+        }
+      }
+    });
+
+    // Auto calculate duration based on distance
+    const distanceInput = document.getElementById('distance');
+    const durationInput = document.getElementById('duration');
+    
+    distanceInput.addEventListener('input', function() {
+      const distance = parseFloat(this.value);
+      if (distance && !durationInput.value) {
+        // Estimate duration based on average speed of 60km/h
+        const hours = Math.floor(distance / 60);
+        const minutes = Math.round((distance / 60 - hours) * 60);
+        if (hours > 0 && minutes > 0) {
+          durationInput.value = `${hours} giờ ${minutes} phút`;
+        } else if (hours > 0) {
+          durationInput.value = `${hours} giờ`;
+        } else if (minutes > 0) {
+          durationInput.value = `${minutes} phút`;
+        }
+      }
+    }); 

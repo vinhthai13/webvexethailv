@@ -1,0 +1,44 @@
+extends ../../layouts/user
+
+block content
+  .container.py-5
+    .row.justify-content-center
+      .col-md-8
+        .card.shadow.text-center
+          .card-body
+            i.fas.fa-check-circle.fa-5x.text-success.mb-4
+            h1.mb-4 Đặt vé thành công!
+            p.lead.mb-4 Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi
+            
+            .card.mb-4
+              .card-body
+                h5.card-title Thông tin đặt vé
+                .row
+                  .col-md-6.text-start
+                    p.mb-1
+                      strong Mã đặt vé: 
+                      | #{booking.id}
+                    p.mb-1
+                      strong Tuyến xe: 
+                      | #{booking.from_location} - #{booking.to_location}
+                    p.mb-1
+                      strong Thời gian: 
+                      | #{booking.departure_time}
+                  .col-md-6.text-start
+                    p.mb-1
+                      strong Số lượng: 
+                      | #{booking.seats} vé
+                    p.mb-1
+                      strong Tổng tiền: 
+                      | #{booking.total_price.toLocaleString('vi-VN')}đ
+                    p.mb-1
+                      strong Trạng thái: 
+                      span.badge.bg-success Đã thanh toán
+            
+            .d-grid.gap-2.col-6.mx-auto
+              a.btn.btn-primary(href=`/dat-ve/${booking.id}`)
+                i.fas.fa-eye.me-1
+                | Xem chi tiết
+              a.btn.btn-outline-primary(href="/lich-trinh")
+                i.fas.fa-search.me-1
+                | Tìm chuyến khác 

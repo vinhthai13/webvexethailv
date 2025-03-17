@@ -1,0 +1,73 @@
+extends ../../layout
+
+block content
+  .container.py-4
+    h1.mb-4.text-center Lịch sử đặt vé
+    
+    if bookings && bookings.length > 0
+      .row
+        each booking in bookings
+          .col-lg-6.mb-4
+            .card.shadow-sm.h-100
+              .card-body
+                .d-flex.justify-content-between.align-items-start.mb-3
+                  h5.card-title.mb-0
+                    | #{booking.from_location} - #{booking.to_location}
+                  span(class=`badge bg-${booking.status_color}`)= booking.status_name
+                
+                .row.mb-3
+                  .col-md-6
+                    p.mb-2
+                      i.fas.fa-calendar.text-muted.me-2
+                      | #{new Date(booking.booking_date).toLocaleDateString('vi-VN')}
+                    p.mb-2
+                      i.fas.fa-clock.text-muted.me-2
+                      | #{booking.departure_time}
+                    p.mb-0
+                      i.fas.fa-bus.text-muted.me-2
+                      | #{booking.bus_type}
+                  .col-md-6
+                    p.mb-2
+                      i.fas.fa-user.text-muted.me-2
+                      | #{booking.customer_name}
+                    p.mb-2
+                      i.fas.fa-ticket-alt.text-muted.me-2
+                      | #{booking.seats} vé
+                    p.mb-0
+                      i.fas.fa-tag.text-muted.me-2
+                      span.text-danger.fw-bold #{booking.total_price.toLocaleString('vi-VN')}đ
+                
+                if booking.status_code === 'pending'
+                  .d-flex.justify-content-end
+                    button.btn.btn-danger.btn-sm.cancel-booking(data-id=booking.id)
+                      i.fas.fa-times.me-2
+                      | Hủy vé
+    else
+      .text-center.py-5
+        i.fas.fa-ticket-alt.fa-3x.text-muted.mb-3
+        h4.text-muted Chưa có vé nào được đặt
+        p.text-muted
+          | Bạn chưa đặt vé nào. 
+          a.text-primary(href='/tuyen-xe') Đặt vé ngay
+
+block scripts
+  script.
+    $(document).ready(function() {
+      $('.cancel-booking').click(function() {
+        const bookingId = $(this).data('id');
+        if (confirm('Bạn có chắc chắn muốn hủy vé này không?')) {
+          $.post(`/dat-ve/huy/${bookingId}`)
+            .done(function(response) {
+              if (response.success) {
+                alert('Hủy vé thành công');
+                location.reload();
+              } else {
+                alert(response.message || 'Có lỗi xảy ra');
+              }
+            })
+            .fail(function() {
+              alert('Có lỗi xảy ra');
+            });
+        }
+      });
+    }); 
